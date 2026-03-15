@@ -1,17 +1,21 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Models\Layanan;
 use Illuminate\Support\Facades\Route;
 
-// LANDING PAGE
+// ==========================================
+// LANDING PAGE (publik - data layanan dinamis)
+// ==========================================
 Route::get('/', function () {
     $layanan = Layanan::where('is_active', true)->get();
     return view('landing', compact('layanan'));
 })->name('home');
 
-
-// AUTH (nek BELUM login)
+// ==========================================
+// AUTH (hanya jika BELUM login)
+// ==========================================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -21,17 +25,23 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// ==========================================
 // ADMIN
+// ==========================================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 });
 
+// ==========================================
 // RT
+// ==========================================
 Route::middleware(['auth', 'role:rt'])->prefix('rt')->name('rt.')->group(function () {
     Route::get('/dashboard', fn() => view('rt.dashboard'))->name('dashboard');
 });
 
+// ==========================================
 // WARGA
+// ==========================================
 Route::middleware(['auth', 'role:warga'])->prefix('warga')->name('warga.')->group(function () {
     Route::get('/dashboard', fn() => view('warga.dashboard'))->name('dashboard');
 });
