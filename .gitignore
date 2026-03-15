@@ -1,0 +1,82 @@
+# ===========================
+# Laravel Framework
+# ===========================
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# ===========================
+# Environment & Config
+# ===========================
+.env
+.env.backup
+.env.production
+
+# ===========================
+# IDE & Editor
+# ===========================
+/.idea
+/.vscode
+*.swp
+*.swo
+*~
+.project
+.settings
+*.sublime-project
+*.sublime-workspace
+
+# ===========================
+# OS Generated Files
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ===========================
+# Log Files
+# ===========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/storage/logs/*.log
+
+# ===========================
+# Compiled & Cache
+# ===========================
+*.cache
+/bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# ===========================
+# Testing
+# ===========================
+.phpunit.result.cache
+/coverage
+
+# ===========================
+# Build Output
+# ===========================
+/public/css
+/public/js
+/public/mix-manifest.json
+*.map
+
+# ===========================
+# Upload Files (jangan commit file upload user)
+# ===========================
+/storage/app/public/uploads/*
+!/storage/app/public/uploads/.gitkeep
+
+# ===========================
+# Misc
+# ===========================
+Homestead.json
+Homestead.yaml
+auth.json
