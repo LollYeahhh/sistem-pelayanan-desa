@@ -2,11 +2,17 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\LayananController as AdminLayananController;
+use App\Http\Controllers\Admin\FormBuilderController as AdminFormBuilderController;
+use App\Http\Controllers\Admin\WargaController as AdminWargaController;
+use App\Http\Controllers\Admin\PengajuanController as AdminPengajuanController;
+use App\Http\Controllers\Admin\ArsipController as AdminArsipController;
+use App\Http\Controllers\Admin\MonografiController as AdminMonografiController;
 use App\Models\Layanan;
 use Illuminate\Support\Facades\Route;
 
 // ==========================================
-// LANDING PAGE (publik - data layanan dinamis)
+// LANDING PAGE
 // ==========================================
 Route::get('/', function () {
     $layanan = Layanan::where('is_active', true)->get();
@@ -14,7 +20,7 @@ Route::get('/', function () {
 })->name('home');
 
 // ==========================================
-// AUTH (hanya jika BELUM login)
+// AUTH
 // ==========================================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -29,7 +35,42 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // ADMIN
 // ==========================================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+
+    // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Manajemen Layanan
+    Route::get('/layanan', [AdminLayananController::class, 'index'])->name('layanan.index');
+    Route::post('/layanan', [AdminLayananController::class, 'store'])->name('layanan.store');
+    Route::put('/layanan/{layanan}', [AdminLayananController::class, 'update'])->name('layanan.update');
+    Route::patch('/layanan/{layanan}/toggle', [AdminLayananController::class, 'toggleStatus'])->name('layanan.toggle');
+    Route::delete('/layanan/{layanan}', [AdminLayananController::class, 'destroy'])->name('layanan.destroy');
+
+    // Form Builder
+    Route::get('/layanan/{layanan}/form-builder', [AdminFormBuilderController::class, 'show'])->name('layanan.form-builder');
+    Route::post('/layanan/{layanan}/sections', [AdminFormBuilderController::class, 'storeSection'])->name('layanan.sections.store');
+    Route::delete('/layanan/{layanan}/sections/{section}', [AdminFormBuilderController::class, 'destroySection'])->name('layanan.sections.destroy');
+    Route::post('/layanan/{layanan}/sections/{section}/fields', [AdminFormBuilderController::class, 'storeField'])->name('layanan.fields.store');
+    Route::put('/layanan/{layanan}/fields/{field}', [AdminFormBuilderController::class, 'updateField'])->name('layanan.fields.update');
+    Route::delete('/layanan/{layanan}/fields/{field}', [AdminFormBuilderController::class, 'destroyField'])->name('layanan.fields.destroy');
+
+    // Database Warga
+    Route::get('/warga', [AdminWargaController::class, 'index'])->name('warga.index');
+    Route::get('/warga/{user}', [AdminWargaController::class, 'show'])->name('warga.show');
+    Route::put('/warga/{user}', [AdminWargaController::class, 'update'])->name('warga.update');
+    Route::patch('/warga/{user}/toggle', [AdminWargaController::class, 'toggleStatus'])->name('warga.toggle');
+
+    // Pengajuan Surat Masuk
+    Route::get('/pengajuan', [AdminPengajuanController::class, 'index'])->name('pengajuan.index');
+    Route::get('/pengajuan/{permohonan}', [AdminPengajuanController::class, 'show'])->name('pengajuan.show');
+    Route::patch('/pengajuan/{permohonan}/approve', [AdminPengajuanController::class, 'approve'])->name('pengajuan.approve');
+    Route::patch('/pengajuan/{permohonan}/reject', [AdminPengajuanController::class, 'reject'])->name('pengajuan.reject');
+
+    // Arsip Dokumen
+    Route::get('/arsip', [AdminArsipController::class, 'index'])->name('arsip.index');
+
+    // Laporan Monografi
+    Route::get('/monografi', [AdminMonografiController::class, 'index'])->name('monografi.index');
 });
 
 // ==========================================
