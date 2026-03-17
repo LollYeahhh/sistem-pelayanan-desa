@@ -52,6 +52,34 @@ class WargaController extends Controller
             ->with("success", "Data warga berhasil diperbarui.");
     }
 
+    public function updateRole(Request $request, User $user)
+    {
+        if (! in_array($user->role, ["warga", "rt"], true)) {
+            return redirect()
+                ->route("admin.warga.index")
+                ->with("error", "Role pengguna ini tidak bisa diubah dari Database Warga.");
+        }
+
+        $validated = $request->validate([
+            "role" => "required|in:warga,rt",
+        ]);
+
+        if ($user->role === $validated["role"]) {
+            return back()->with("success", "Role pengguna tidak berubah.");
+        }
+
+        $user->update([
+            "role" => $validated["role"],
+        ]);
+
+        return back()->with(
+            "success",
+            "Role pengguna berhasil diubah menjadi " .
+                ($validated["role"] === "rt" ? "RT" : "Warga") .
+                ".",
+        );
+    }
+
     public function toggleStatus(User $user)
     {
         $user->status_akun =

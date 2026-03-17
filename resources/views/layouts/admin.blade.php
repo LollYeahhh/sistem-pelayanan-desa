@@ -13,7 +13,7 @@
 
     @include('components.navbar-admin')
 
-    <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-[40px] py-6 lg:py-8">
+    <main class="max-w-[1440px] mx-auto px-4 pt-[115px] pb-6 sm:px-6 lg:px-[40px] lg:pt-[125px] lg:pb-8">
         @yield('content')
     </main>
 

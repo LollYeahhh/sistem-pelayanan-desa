@@ -14,6 +14,10 @@
 <div id="flash-msg" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ session('success') }}</div>
 @endif
 
+@if(session('error'))
+<div id="flash-error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ session('error') }}</div>
+@endif
+
 <div class="bg-white rounded-2xl border border-gray-light overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full">
@@ -28,6 +32,9 @@
             </thead>
             <tbody>
                 @forelse($warga as $i => $user)
+                @php
+                    $accountStatus = $user->status_akun ?? 'aktif';
+                @endphp
                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
                     <td class="text-center text-sm text-gray-500 px-6 py-5">{{ $warga->firstItem() + $i }}</td>
                     <td class="px-6 py-5">
@@ -42,14 +49,24 @@
                         </div>
                     </td>
                     <td class="text-center px-6 py-5">
-                        <span class="inline-block text-xs font-bold px-3 py-1 rounded-full {{ $user->role === 'rt' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600' }}">
-                            {{ ucfirst($user->role) }}
-                        </span>
+                        <form method="POST" action="{{ route('admin.warga.role', $user) }}" class="inline-block">
+                            @csrf
+                            @method('PATCH')
+                            <select
+                                name="role"
+                                onchange="handleRoleChange(this.form, this)"
+                                data-current-role="{{ $user->role }}"
+                                class="h-[36px] rounded-full border border-transparent px-4 pr-8 text-xs font-bold text-center outline-none transition focus:border-primary {{ $user->role === 'rt' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600' }}"
+                            >
+                                <option value="rt" {{ $user->role === 'rt' ? 'selected' : '' }}>RT</option>
+                                <option value="warga" {{ $user->role === 'warga' ? 'selected' : '' }}>Warga</option>
+                            </select>
+                        </form>
                     </td>
                     <td class="text-center px-6 py-5">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold {{ ($user->is_active ?? true) ? 'text-green-600' : 'text-red-500' }}">
-                            <span class="w-2 h-2 rounded-full {{ ($user->is_active ?? true) ? 'bg-green-500' : 'bg-red-400' }}"></span>
-                            {{ ($user->is_active ?? true) ? 'Aktif' : 'Nonaktif' }}
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold {{ $accountStatus === 'aktif' ? 'text-green-600' : 'text-red-500' }}">
+                            <span class="w-2 h-2 rounded-full {{ $accountStatus === 'aktif' ? 'bg-green-500' : 'bg-red-400' }}"></span>
+                            {{ $accountStatus === 'aktif' ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </td>
                     <td class="text-center px-6 py-5">
@@ -71,5 +88,24 @@
     </div>
 </div>
 
-<script>setTimeout(()=>{const f=document.getElementById('flash-msg');if(f)f.style.display='none';},3000);</script>
+<script>
+function handleRoleChange(form, select) {
+    const previousRole = select.dataset.currentRole;
+    const selectedLabel = select.options[select.selectedIndex].text;
+
+    if (!confirm(`Ubah role pengguna menjadi ${selectedLabel}?`)) {
+        select.value = previousRole;
+        return;
+    }
+
+    form.submit();
+}
+
+setTimeout(() => {
+    const flashSuccess = document.getElementById('flash-msg');
+    const flashError = document.getElementById('flash-error');
+    if (flashSuccess) flashSuccess.style.display = 'none';
+    if (flashError) flashError.style.display = 'none';
+}, 3000);
+</script>
 @endsection

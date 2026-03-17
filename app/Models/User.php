@@ -10,52 +10,59 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [ 
-        'nama_lengkap',
-        'nik',
-        'email',
-        'password',
-        'role',
-        'tempat_lahir',
-        'tanggal_lahir',
-        'jenis_kelamin',
-        'status_perkawinan',
-        'agama',
-        'pekerjaan',
-        'alamat',
-        'rt_rw',
-        'desa',
-        'kecamatan',
-        'no_hp',
-        'foto',
-        'status_akun',
-        'is_verified'
+    protected $fillable = [
+        "nama_lengkap",
+        "nik",
+        "email",
+        "password",
+        "role",
+        "tempat_lahir",
+        "tanggal_lahir",
+        "jenis_kelamin",
+        "status_perkawinan",
+        "agama",
+        "pekerjaan",
+        "alamat",
+        "rt_rw",
+        "desa",
+        "kecamatan",
+        "no_hp",
+        "foto",
+        "status_akun",
+        "is_verified",
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ["password", "remember_token"];
 
     protected function casts(): array
     {
         return [
-            'tanggal_lahir' => 'date',
-            'is_verified' => 'boolean',
-            'password' => 'hashed',
+            "tanggal_lahir" => "date",
+            "is_verified" => "boolean",
+            "password" => "hashed",
         ];
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === "admin";
     }
     public function isRT(): bool
     {
-        return $this->role === 'rt';
+        return $this->role === "rt";
     }
     public function isWarga(): bool
     {
-        return $this->role === 'warga';
+        return $this->role === "warga";
+    }
+
+    public function permohonan()
+    {
+        return $this->hasMany(PermohonanSurat::class);
+    }
+
+    public function monografiEntries()
+    {
+        return $this->hasMany(MonografiData::class, "rt_user_id");
     }
 }

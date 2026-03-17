@@ -36,6 +36,16 @@ class PermohonanSurat extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
+    public function data()
+    {
+        return $this->hasMany(PermohonanData::class, 'permohonan_id');
+    }
+
+    public function lampiran()
+    {
+        return $this->hasMany(PermohonanLampiran::class, 'permohonan_id');
+    }
+
     public function getStatusBadgeAttribute(): array
     {
         return match($this->status) {
