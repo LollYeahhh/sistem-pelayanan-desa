@@ -72,46 +72,59 @@
     <div class="bg-white rounded-2xl border border-gray-light p-6">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-lg font-bold text-dark">Statistik Pengajuan Bulanan</h2>
-            <select class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-dark focus:ring-primary focus:border-primary">
-                <option>Semua</option>
-                <option>Menunggu</option>
-                <option>Diproses</option>
-                <option>Selesai</option>
-            </select>
+            <form method="GET" action="{{ route('admin.dashboard') }}">
+                <select
+                    name="year"
+                    onchange="this.form.submit()"
+                    class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-dark focus:ring-primary focus:border-primary"
+                >
+                    @foreach ($availableYears as $year)
+                        <option value="{{ $year }}" {{ (int) $selectedYear === (int) $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
         </div>
         <div class="h-[280px]">
             <canvas id="chartPengajuan"></canvas>
         </div>
     </div>
 
-    {{-- Pengajuan Terbaru (sidebar) --}}
-    <div class="bg-white rounded-2xl border border-gray-light p-6">
-        <h2 class="text-lg font-bold text-dark mb-5">Pengajuan Terbaru</h2>
+    {{-- Pengguna Terbaru (sidebar) --}}
+    <div class="bg-white rounded-2xl border border-gray-light p-6 flex h-full flex-col">
+        <h2 class="text-lg font-bold text-dark mb-5">Pengguna Terbaru</h2>
 
-        <div class="space-y-4">
-            @forelse($pengajuanTerbaru->take(3) as $p)
+        <div class="space-y-4 flex-1">
+            @forelse($penggunaTerbaru as $user)
             <div class="flex items-center gap-3">
-                {{-- Avatar Inisial --}}
+                @php
+                    $namaPengguna = trim($user->nama_lengkap ?? '');
+                    $parts = preg_split('/\s+/', $namaPengguna) ?: [];
+                    $firstInitial = strtoupper(substr($parts[0] ?? 'U', 0, 1));
+                    $secondInitial = strtoupper(substr($parts[1] ?? '', 0, 1));
+                    $metadataPengguna = $user->nik ?: ($user->role === 'rt' ? 'RT' : 'Warga');
+                @endphp
                 <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <span class="text-xs font-bold text-primary">
-                        {{ strtoupper(substr($p->user->nama_lengkap ?? 'U', 0, 1)) }}{{ strtoupper(substr(explode(' ', $p->user->nama_lengkap ?? 'U')[1] ?? '', 0, 1)) }}
+                        {{ $firstInitial }}{{ $secondInitial }}
                     </span>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-sm font-bold text-dark truncate">{{ $p->user->nama_lengkap ?? '-' }}</p>
-                    <p class="text-xs text-gray truncate">{{ $p->layanan->nama_layanan ?? '-' }}</p>
+                    <p class="text-sm font-bold text-dark truncate">{{ $namaPengguna !== '' ? $namaPengguna : '-' }}</p>
+                    <p class="text-xs text-gray truncate">{{ $metadataPengguna }}</p>
                 </div>
             </div>
             @empty
             <div class="text-center py-8">
-                <p class="text-sm text-gray">Belum ada pengajuan.</p>
+                <p class="text-sm text-gray">Belum ada pengguna terdaftar.</p>
             </div>
             @endforelse
         </div>
 
-        @if($pengajuanTerbaru->count() > 0)
-        <div class="mt-6 pt-4 border-t border-gray-100">
-            <a href="#" class="text-sm font-semibold text-primary hover:underline">Lihat Semua Pengajuan</a>
+        @if($penggunaTerbaru->count() > 0)
+        <div class="mt-6 pt-4 border-t border-gray-100 text-center">
+            <a href="{{ route('admin.warga.index') }}" class="inline-flex items-center justify-center text-sm font-semibold text-primary hover:underline">Lihat Semua Pengguna</a>
         </div>
         @endif
     </div>
@@ -120,7 +133,7 @@
 {{-- TABEL 5 PENGAJUAN TERBARU --}}
 <div class="bg-white rounded-2xl border border-gray-light overflow-hidden">
     <div class="flex items-center justify-between p-6 pb-4">
-        <h2 class="text-base font-bold text-dark">5 Pengajuan Terbaru</h2>
+        <h2 class="text-base font-bold text-dark">{{ $pengajuanTerbaruCount }} Pengajuan Terbaru</h2>
         <a href="#" class="text-sm font-semibold text-primary hover:underline">Lihat Semua</a>
     </div>
 

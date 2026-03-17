@@ -8,15 +8,15 @@
         ->implode("");
 @endphp
 
-<nav class="fixed left-0 right-0 top-0 z-40 h-[91px] border border-black/10 bg-[#D8E7FF]">
+<nav class="fixed left-0 right-0 top-0 z-40 h-[83px] border border-black/10 bg-[#D8E7FF]">
     <div class="mx-auto flex h-full max-w-[1440px] items-center gap-4 px-4 sm:px-6 lg:px-[62px]">
         <button
             type="button"
             onclick="document.getElementById('rtSidebar').classList.toggle('hidden')"
-            class="flex shrink-0 items-center justify-center rounded-[4px] border border-black/[0.08] bg-[#C9DEFF] p-1 text-[#141B34] transition hover:bg-[#B8D0F8]"
+            class="flex shrink-0 items-center justify-center rounded-[4px] border border-black/[0.08] bg-[#C9DEFF] p-[3px] text-[#141B34] transition hover:bg-[#B8D0F8]"
             aria-label="Buka menu RT"
         >
-            <svg class="h-[30px] w-[30px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="h-[28px] w-[28px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
         </button>
@@ -25,10 +25,10 @@
             <img
                 src="{{ asset('images/logo-tegal.png') }}"
                 alt="Logo Desa Dukuhtengah"
-                class="h-[62px] w-[56px] object-contain"
+                class="h-[56px] w-[50px] object-contain"
             />
             <div class="min-w-0">
-                <div class="text-[20px] font-extrabold leading-[23px] text-[#0F172A]">
+                <div class="text-[18px] font-extrabold leading-[21px] text-[#0F172A]">
                     <p class="mb-0">Desa</p>
                     <p>Dukuhtengah</p>
                 </div>
@@ -41,8 +41,8 @@
         <div class="flex-1"></div>
 
         <div class="flex items-center gap-3 lg:gap-[29px]">
-            <div class="hidden w-[303px] items-center gap-[17px] rounded-[26px] border border-[#F3F3F3] bg-[#F8FAFC] px-[19px] py-[13px] lg:flex">
-                <svg class="h-6 w-6 shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <div class="hidden w-[303px] items-center gap-[17px] rounded-[26px] border border-[#F3F3F3] bg-[#F8FAFC] px-[19px] py-[10px] lg:flex">
+                <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input
@@ -53,13 +53,13 @@
             </div>
 
             <button type="button" class="hidden text-[#141B34] transition hover:text-primary sm:inline-flex" aria-label="Notifikasi RT">
-                <svg class="h-[39px] w-[39px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <svg class="h-[35px] w-[35px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
             </button>
 
             <button type="button" class="hidden text-[#141B34] transition hover:text-primary md:inline-flex" aria-label="Pesan RT">
-                <svg class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <svg class="h-[34px] w-[34px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75h6.75m-6.75 3h4.5m-8.25 6.375V6.375A2.625 2.625 0 017.5 3.75h9A2.625 2.625 0 0119.125 6.375v7.5A2.625 2.625 0 0116.5 16.5h-5.69l-3.936 3.28A.375.375 0 016.25 19.5v-3A2.625 2.625 0 013.625 13.875z" />
                 </svg>
             </button>
@@ -68,13 +68,13 @@
                 <button
                     type="button"
                     onclick="this.nextElementSibling.classList.toggle('hidden')"
-                    class="flex h-[57px] w-[57px] items-center justify-center rounded-full bg-white/50 text-sm font-bold text-[#141B34] shadow-[0_10px_30px_-22px_rgba(15,23,42,0.6)] transition hover:ring-2 hover:ring-white/70"
+                    class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-white/50 text-sm font-bold text-[#141B34] shadow-[0_10px_30px_-22px_rgba(15,23,42,0.6)] transition hover:ring-2 hover:ring-white/70"
                     aria-label="Menu profil RT"
                 >
                     <span>{{ $userInitials ?: "RT" }}</span>
                 </button>
 
-                <div class="absolute right-0 top-[68px] z-50 hidden w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+                <div class="absolute right-0 top-[60px] z-50 hidden w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
                     <div class="px-4 py-3">
                         <p class="text-sm font-bold text-[#0F172A]">{{ $userName }}</p>
                         <p class="mt-1 text-xs text-[#94A3B8]">{{ $authUser->email ?? "" }}</p>
@@ -103,7 +103,7 @@
 </nav>
 
 <div id="rtSidebar" class="hidden fixed left-0 top-0 z-50 h-full w-[280px] border-r border-[#E5EEF9] bg-white shadow-xl">
-    <div class="flex h-[91px] items-center justify-between border-b border-[#EEF2F7] px-6">
+    <div class="flex h-[83px] items-center justify-between border-b border-[#EEF2F7] px-6">
         <a href="{{ route('rt.dashboard') }}" class="flex items-center gap-3">
             <img
                 src="{{ asset('images/logo-tegal.png') }}"

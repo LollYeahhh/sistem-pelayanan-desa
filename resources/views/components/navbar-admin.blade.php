@@ -1,8 +1,8 @@
 {{-- Navbar Admin - sesuai desain Figma Desktop-63 --}}
 <nav
-    class="fixed top-0 left-0 right-0 z-40 bg-[#d8e7ff] border border-black/10 h-[91px] overflow-hidden"
+    class="fixed top-0 left-0 right-0 z-40 overflow-hidden border border-black/10 bg-[#d8e7ff] h-[83px]"
 >
-    <div class="flex items-center h-full px-6 lg:px-[62px]">
+    <div class="flex h-full items-center px-6 lg:px-[62px]">
         {{-- Hamburger Button - dari Figma: bg-[#c9deff] border rounded-[4px] --}}
         <button
             onclick="
@@ -10,9 +10,9 @@
                     .getElementById('adminSidebar')
                     .classList.toggle('hidden')
             "
-            class="bg-[#c9deff] border border-black/[0.08] rounded-[4px] p-[4px] flex items-center justify-center shrink-0 hover:bg-[#b8d0f8] transition mr-4"
+            class="mr-4 flex shrink-0 items-center justify-center rounded-[4px] border border-black/[0.08] bg-[#c9deff] p-[3px] transition hover:bg-[#b8d0f8]"
         >
-            <svg class="w-[30px] h-[30px] text-[#0f172a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="h-[28px] w-[28px] text-[#0f172a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
         </button>
@@ -25,11 +25,11 @@
             <img
                 src="{{ asset('images/logo-tegal.png') }}"
                 alt="Logo"
-                class="h-[62px] w-[56px] object-contain"
+                class="h-[56px] w-[50px] object-contain"
             />
             <div class="flex flex-col gap-1">
                 <div
-                    class="font-extrabold text-[#0f172a] text-[20px] leading-[23px]"
+                    class="text-[18px] font-extrabold leading-[21px] text-[#0f172a]"
                 >
                     <p class="mb-0">Desa</p>
                     <p>Dukuhtengah</p>
@@ -45,9 +45,9 @@
         <div class="flex items-center gap-8">
             {{-- Search Bar - dari Figma: bg-[#f8fafc] border-[#f3f3f3] rounded-[26px] w-[303px] px-[19px] py-[13px] --}}
             <div
-                class="hidden md:flex bg-[#f8fafc] border border-[#f3f3f3] rounded-[26px] px-[19px] py-[13px] items-center gap-[17px] w-[303px]"
+                class="hidden w-[303px] items-center gap-[17px] rounded-[26px] border border-[#f3f3f3] bg-[#f8fafc] px-[19px] py-[10px] md:flex"
             >
-                <svg class="w-6 h-6 text-black/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input
@@ -59,9 +59,9 @@
 
             {{-- Notifikasi - dari Figma: size-[39px] dengan titik merah --}}
             <button
-                class="relative shrink-0 w-[39px] h-[39px] flex items-center justify-center"
+                class="relative flex h-[35px] w-[35px] shrink-0 items-center justify-center"
             >
-                <svg class="w-6 h-6 text-[#0f172a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <svg class="h-[22px] w-[22px] text-[#0f172a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
                 <span
@@ -73,15 +73,15 @@
             <div class="relative shrink-0">
                 <button
                     onclick="this.nextElementSibling.classList.toggle('hidden')"
-                    class="w-[57px] h-[57px] rounded-full bg-gray-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-blue-300 transition"
+                    class="flex h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-full bg-gray-200 transition hover:ring-2 hover:ring-blue-300"
                 >
-                    <svg class="w-[39px] h-[39px] text-gray-400 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <svg class="h-[34px] w-[34px] text-gray-400 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                     </svg>
                 </button>
                 {{-- Dropdown --}}
                 <div
-                    class="hidden absolute right-0 top-[65px] bg-white border border-gray-100 rounded-xl shadow-lg py-2 w-52 z-50"
+                    class="absolute right-0 top-[60px] z-50 hidden w-52 rounded-xl border border-gray-100 bg-white py-2 shadow-lg"
                 >
                     <div class="px-4 py-2">
                         <p class="text-sm font-bold text-[#0f172a]">{{
@@ -119,7 +119,7 @@
 >
     {{-- Sidebar Header --}}
     <div
-        class="flex items-center justify-between px-6 h-[91px] border-b border-gray-100"
+        class="flex h-[83px] items-center justify-between border-b border-gray-100 px-6"
     >
         <a
             href="{{ route('admin.dashboard') }}"

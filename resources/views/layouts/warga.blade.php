@@ -12,7 +12,7 @@
     @include ("components.navbar-warga")
 
     {{-- Main Content --}}
-    <main class="max-w-[1440px] mx-auto px-4 pb-6 pt-[115px] sm:px-6 lg:px-[40px] lg:pb-8 lg:pt-[137px]">
+    <main class="max-w-[1440px] mx-auto px-4 pb-6 pt-[107px] sm:px-6 lg:px-[40px] lg:pb-8 lg:pt-[129px]">
         {{-- Flash Messages --}}
         @if (session("success"))
             <div

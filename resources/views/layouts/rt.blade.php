@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-[#F5F9FF] font-sans">
     @include ("components.navbar-rt")
 
-    <main class="mx-auto max-w-[1440px] px-4 pb-6 pt-[115px] sm:px-6 lg:px-[40px] lg:pb-8 lg:pt-[137px]">
+    <main class="mx-auto max-w-[1440px] px-4 pb-6 pt-[107px] sm:px-6 lg:px-[40px] lg:pb-8 lg:pt-[129px]">
         @if (session("success"))
             <div class="mb-6 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 animate-fade-in">
                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
