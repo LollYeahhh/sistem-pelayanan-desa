@@ -503,26 +503,16 @@
 
                                 if (filled) {
                                     btn.disabled = false;
-                                    btn.classList.remove(
-                                        "opacity-50",
-                                        "cursor-not-allowed",
-                                    );
-                                    btn.classList.add(
-                                        "hover:bg-[#2563eb]",
-                                        "hover:border-[#2563eb]",
-                                        "cursor-pointer",
-                                    );
+                                    btn.style.backgroundColor = "#2563eb";
+                                    btn.style.borderColor = "#2563eb";
+                                    btn.style.opacity = "1";
+                                    btn.style.cursor = "pointer";
                                 } else {
                                     btn.disabled = true;
-                                    btn.classList.add(
-                                        "opacity-50",
-                                        "cursor-not-allowed",
-                                    );
-                                    btn.classList.remove(
-                                        "hover:bg-[#2563eb]",
-                                        "hover:border-[#2563eb]",
-                                        "cursor-pointer",
-                                    );
+                                    btn.style.backgroundColor = "#a8c3ff";
+                                    btn.style.borderColor = "#8bafff";
+                                    btn.style.opacity = "0.5";
+                                    btn.style.cursor = "not-allowed";
                                 }
                             }
 

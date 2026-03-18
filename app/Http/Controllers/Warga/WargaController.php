@@ -185,6 +185,61 @@ class WargaController extends Controller
     }
 
     /**
+     * Search for warga navbar.
+     */
+    public function search(Request $request)
+    {
+        $q = trim($request->query("q", ""));
+
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = collect();
+
+        // Search Layanan aktif
+        Layanan::where("is_active", true)
+            ->where("nama_layanan", "like", "%{$q}%")
+            ->take(5)
+            ->get()
+            ->each(function ($layanan) use ($results) {
+                $results->push([
+                    "type" => "Layanan",
+                    "title" => $layanan->nama_layanan,
+                    "sub" => "Ajukan layanan ini",
+                    "url" => route("warga.ajukan.form", $layanan->id),
+                ]);
+            });
+
+        // Search own Riwayat Permohonan
+        PermohonanSurat::with("layanan")
+            ->where("user_id", Auth::id())
+            ->where(function ($query) use ($q) {
+                $query
+                    ->where("no_registrasi", "like", "%{$q}%")
+                    ->orWhereHas(
+                        "layanan",
+                        fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"),
+                    );
+            })
+            ->take(5)
+            ->get()
+            ->each(function ($p) use ($results) {
+                $results->push([
+                    "type" => "Riwayat",
+                    "title" => $p->no_registrasi ?: "Permohonan #" . $p->id,
+                    "sub" =>
+                        ($p->layanan->nama_layanan ?? "-") .
+                        " — " .
+                        ucfirst($p->status),
+                    "url" => route("warga.riwayat.show", $p->id),
+                ]);
+            });
+
+        return response()->json($results->take(10)->values());
+    }
+
+    /**
      * Update profil
      */
     public function profilUpdate(Request $request)

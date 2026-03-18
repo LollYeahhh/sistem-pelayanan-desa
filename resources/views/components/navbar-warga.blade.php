@@ -16,7 +16,11 @@
     >
         <button
             type="button"
-            onclick="document.getElementById('wargaSidebar').classList.toggle('hidden')"
+            onclick="
+                document
+                    .getElementById('wargaSidebar')
+                    .classList.toggle('hidden')
+            "
             class="flex shrink-0 items-center justify-center rounded-[4px] border border-black/[0.08] bg-[#C9DEFF] p-[3px] text-[#141B34] transition hover:bg-[#B8D0F8]"
             aria-label="Buka menu"
         >
@@ -43,26 +47,45 @@
                 </div>
                 <p
                     class="mt-1 text-[10px] font-medium uppercase tracking-[1px] text-[#64748B]"
-                >
-                    Kecamatan Bojong
-                </p>
+                >Kecamatan Bojong</p>
             </div>
         </a>
 
         <div class="flex-1"></div>
 
         <div class="flex items-center gap-3 lg:gap-[29px]">
-            <div
-                class="hidden w-[303px] items-center gap-[17px] rounded-[26px] border border-[#F3F3F3] bg-[#F8FAFC] px-[19px] py-[10px] lg:flex"
-            >
-                <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-                <input
-                    type="text"
-                    placeholder="Cari Layanan"
-                    class="w-full border-none bg-transparent p-0 text-xs font-normal text-black/30 placeholder:text-black/30 focus:outline-none focus:ring-0"
-                />
+            <div class="relative hidden lg:block" id="wargaSearchWrapper">
+                <div
+                    class="flex w-[303px] items-center gap-[17px] rounded-[26px] border border-[#F3F3F3] bg-[#F8FAFC] px-[19px] py-[10px]"
+                >
+                    <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <input
+                        id="wargaSearchInput"
+                        type="text"
+                        placeholder="Cari Layanan"
+                        autocomplete="off"
+                        class="w-full border-none bg-transparent p-0 text-xs font-normal text-[#0f172a] placeholder:text-black/30 focus:outline-none focus:ring-0"
+                    />
+                    <svg id="wargaSearchSpinner" class="hidden h-4 w-4 shrink-0 animate-spin text-black/30" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </div>
+                {{-- Search Results Dropdown --}}
+                <div
+                    id="wargaSearchResults"
+                    class="absolute left-0 top-[48px] z-50 hidden w-[360px] max-h-[400px] overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-xl"
+                >
+                    <div id="wargaSearchList" class="py-2"></div>
+                    <div
+                        id="wargaSearchEmpty"
+                        class="hidden px-4 py-6 text-center text-sm text-gray-400"
+                    >
+                        Tidak ada hasil ditemukan
+                    </div>
+                </div>
             </div>
 
             <button
@@ -103,7 +126,10 @@
                             {{ $userName }}
                         </p>
                         <p class="mt-1 text-xs text-[#94A3B8]">
-                            {{ $authUser->email ?? "" }}
+                            {{
+                                $authUser->email ??
+                                    ""
+                            }}
                         </p>
                     </div>
                     <div class="border-t border-gray-100"></div>
@@ -139,7 +165,9 @@
     id="wargaSidebar"
     class="hidden fixed left-0 top-0 z-50 h-full w-[280px] border-r border-[#E5EEF9] bg-white shadow-xl"
 >
-    <div class="flex h-[83px] items-center justify-between border-b border-[#EEF2F7] px-6">
+    <div
+        class="flex h-[83px] items-center justify-between border-b border-[#EEF2F7] px-6"
+    >
         <a
             href="{{ route('warga.dashboard') }}"
             class="flex items-center gap-3"
@@ -150,20 +178,18 @@
                 class="h-[48px] w-[44px] object-contain"
             />
             <div>
-                <p class="text-sm font-extrabold leading-tight text-[#0F172A]">
-                    Desa Dukuhtengah
-                </p>
+                <p class="text-sm font-extrabold leading-tight text-[#0F172A]">Desa Dukuhtengah</p>
                 <p
                     class="text-[10px] font-medium uppercase tracking-[1px] text-[#64748B]"
-                >
-                    Kecamatan Bojong
-                </p>
+                >Kecamatan Bojong</p>
             </div>
         </a>
 
         <button
             type="button"
-            onclick="document.getElementById('wargaSidebar').classList.add('hidden')"
+            onclick="
+                document.getElementById('wargaSidebar').classList.add('hidden')
+            "
             class="rounded-lg p-1 text-gray-400 transition hover:bg-gray-50 hover:text-gray-600"
             aria-label="Tutup menu"
         >
@@ -219,7 +245,10 @@
 <div
     id="wargaSidebarOverlay"
     class="hidden fixed inset-0 z-40 bg-black/20"
-    onclick="document.getElementById('wargaSidebar').classList.add('hidden'); this.classList.add('hidden');"
+    onclick="
+        document.getElementById('wargaSidebar').classList.add('hidden');
+        this.classList.add('hidden');
+    "
 ></div>
 
 <script>
@@ -239,4 +268,128 @@
             attributeFilter: ["class"],
         });
     }
+</script>
+
+<script>
+    (function () {
+        const input = document.getElementById("wargaSearchInput");
+        const wrapper = document.getElementById("wargaSearchWrapper");
+        const results = document.getElementById("wargaSearchResults");
+        const list = document.getElementById("wargaSearchList");
+        const empty = document.getElementById("wargaSearchEmpty");
+        const spinner = document.getElementById("wargaSearchSpinner");
+
+        if (!input) return;
+
+        let debounceTimer = null;
+        const searchUrl = "{{ route('warga.search') }}";
+
+        const typeIcons = {
+            Layanan:
+                '<svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>',
+            Riwayat:
+                '<svg class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        };
+
+        const typeBadgeColors = {
+            Layanan: "bg-green-50 text-green-600",
+            Riwayat: "bg-blue-50 text-blue-600",
+        };
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderResults(data) {
+            list.innerHTML = "";
+            empty.classList.add("hidden");
+
+            if (data.length === 0) {
+                empty.classList.remove("hidden");
+                results.classList.remove("hidden");
+                return;
+            }
+
+            data.forEach(function (item) {
+                const icon = typeIcons[item.type] || typeIcons.Layanan;
+                const badgeColor =
+                    typeBadgeColors[item.type] || "bg-gray-50 text-gray-600";
+                const a = document.createElement("a");
+                a.href = item.url;
+                a.className =
+                    "flex items-center gap-3 px-4 py-2.5 hover:bg-[#F8FAFC] transition-colors";
+                a.innerHTML =
+                    '<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9]">' +
+                    icon +
+                    "</div>" +
+                    '<div class="min-w-0 flex-1">' +
+                    '<p class="truncate text-sm font-semibold text-[#0f172a]">' +
+                    escapeHtml(item.title) +
+                    "</p>" +
+                    '<p class="truncate text-xs text-gray-400 mt-0.5">' +
+                    escapeHtml(item.sub) +
+                    "</p>" +
+                    "</div>" +
+                    '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ' +
+                    badgeColor +
+                    '">' +
+                    escapeHtml(item.type) +
+                    "</span>";
+                list.appendChild(a);
+            });
+
+            results.classList.remove("hidden");
+        }
+
+        function doSearch() {
+            const q = input.value.trim();
+            if (q.length < 2) {
+                results.classList.add("hidden");
+                spinner.classList.add("hidden");
+                return;
+            }
+
+            spinner.classList.remove("hidden");
+
+            fetch(searchUrl + "?q=" + encodeURIComponent(q), {
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            })
+                .then((r) => r.json())
+                .then((data) => {
+                    spinner.classList.add("hidden");
+                    renderResults(data);
+                })
+                .catch(() => {
+                    spinner.classList.add("hidden");
+                    results.classList.add("hidden");
+                });
+        }
+
+        input.addEventListener("input", function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(doSearch, 300);
+        });
+
+        input.addEventListener("focus", function () {
+            if (input.value.trim().length >= 2) doSearch();
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                results.classList.add("hidden");
+            }
+        });
+
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                results.classList.add("hidden");
+                input.blur();
+            }
+        });
+    })();
 </script>

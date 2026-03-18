@@ -56,6 +56,12 @@ Route::middleware(["auth", "role:admin"])
             "index",
         ])->name("dashboard");
 
+        // Search
+        Route::get("/search", [
+            AdminDashboardController::class,
+            "search",
+        ])->name("search");
+
         // Manajemen Layanan
         Route::get("/layanan", [AdminLayananController::class, "index"])->name(
             "layanan.index",
@@ -151,9 +157,10 @@ Route::middleware(["auth", "role:admin"])
         );
 
         // Aduan Masyarakat
-        Route::get("/aduan", [AdminAduanMasyarakatController::class, "index"])->name(
-            "aduan.index",
-        );
+        Route::get("/aduan", [
+            AdminAduanMasyarakatController::class,
+            "index",
+        ])->name("aduan.index");
         Route::get("/aduan/{aduan}", [
             AdminAduanMasyarakatController::class,
             "show",
@@ -213,6 +220,9 @@ Route::middleware(["auth", "role:rt"])
             "dashboard",
         );
 
+        // Search
+        Route::get("/search", [RTController::class, "search"])->name("search");
+
         Route::get("/monografi", [RTMonografiController::class, "index"])->name(
             "monografi.index",
         );
@@ -226,23 +236,26 @@ Route::middleware(["auth", "role:rt"])
         ])->name("monografi.update");
 
         Route::middleware("verified.active")->group(function () {
-        Route::get("/ajukan", [RTController::class, "ajukanIndex"])->name(
-            "ajukan.index",
-        );
-        Route::get("/ajukan/{layanan}", [RTController::class, "ajukanForm"])->name(
-            "ajukan.form",
-        );
-        Route::post("/ajukan/{layanan}", [RTController::class, "ajukanStore"])->name(
-            "ajukan.store",
-        );
+            Route::get("/ajukan", [RTController::class, "ajukanIndex"])->name(
+                "ajukan.index",
+            );
+            Route::get("/ajukan/{layanan}", [
+                RTController::class,
+                "ajukanForm",
+            ])->name("ajukan.form");
+            Route::post("/ajukan/{layanan}", [
+                RTController::class,
+                "ajukanStore",
+            ])->name("ajukan.store");
         });
 
         Route::get("/riwayat", [RTController::class, "riwayat"])->name(
             "riwayat.index",
         );
-        Route::get("/riwayat/{permohonan}", [RTController::class, "riwayatShow"])->name(
-            "riwayat.show",
-        );
+        Route::get("/riwayat/{permohonan}", [
+            RTController::class,
+            "riwayatShow",
+        ])->name("riwayat.show");
 
         Route::get("/profil", [RTController::class, "profil"])->name("profil");
         Route::put("/profil", [RTController::class, "profilUpdate"])->name(
@@ -262,20 +275,26 @@ Route::middleware(["auth", "role:warga"])
             "dashboard",
         ])->name("dashboard");
 
+        // Search
+        Route::get("/search", [
+            App\Http\Controllers\Warga\WargaController::class,
+            "search",
+        ])->name("search");
+
         // Ajukan Layanan (Multi-step)
         Route::middleware("verified.active")->group(function () {
-        Route::get("/ajukan", [
-            App\Http\Controllers\Warga\WargaController::class,
-            "ajukanIndex",
-        ])->name("ajukan.index");
-        Route::get("/ajukan/{layanan}", [
-            App\Http\Controllers\Warga\WargaController::class,
-            "ajukanForm",
-        ])->name("ajukan.form");
-        Route::post("/ajukan/{layanan}", [
-            App\Http\Controllers\Warga\WargaController::class,
-            "ajukanStore",
-        ])->name("ajukan.store");
+            Route::get("/ajukan", [
+                App\Http\Controllers\Warga\WargaController::class,
+                "ajukanIndex",
+            ])->name("ajukan.index");
+            Route::get("/ajukan/{layanan}", [
+                App\Http\Controllers\Warga\WargaController::class,
+                "ajukanForm",
+            ])->name("ajukan.form");
+            Route::post("/ajukan/{layanan}", [
+                App\Http\Controllers\Warga\WargaController::class,
+                "ajukanStore",
+            ])->name("ajukan.store");
         });
 
         // Riwayat & Status

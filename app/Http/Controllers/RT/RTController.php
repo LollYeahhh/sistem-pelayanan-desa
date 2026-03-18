@@ -31,7 +31,10 @@ class RTController extends Controller
             ->take(2)
             ->get();
 
-        return view("rt.dashboard", compact("user", "layananPreview", "permohonan"));
+        return view(
+            "rt.dashboard",
+            compact("user", "layananPreview", "permohonan"),
+        );
     }
 
     public function ajukanIndex()
@@ -158,6 +161,61 @@ class RTController extends Controller
         $user = Auth::user();
 
         return view("rt.profil", compact("user"));
+    }
+
+    /**
+     * Search for RT navbar.
+     */
+    public function search(Request $request)
+    {
+        $q = trim($request->query("q", ""));
+
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = collect();
+
+        // Search Layanan aktif
+        Layanan::where("is_active", true)
+            ->where("nama_layanan", "like", "%{$q}%")
+            ->take(5)
+            ->get()
+            ->each(function ($layanan) use ($results) {
+                $results->push([
+                    "type" => "Layanan",
+                    "title" => $layanan->nama_layanan,
+                    "sub" => "Ajukan layanan ini",
+                    "url" => route("rt.ajukan.form", $layanan->id),
+                ]);
+            });
+
+        // Search own Riwayat Permohonan
+        PermohonanSurat::with("layanan")
+            ->where("user_id", Auth::id())
+            ->where(function ($query) use ($q) {
+                $query
+                    ->where("no_registrasi", "like", "%{$q}%")
+                    ->orWhereHas(
+                        "layanan",
+                        fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"),
+                    );
+            })
+            ->take(5)
+            ->get()
+            ->each(function ($p) use ($results) {
+                $results->push([
+                    "type" => "Riwayat",
+                    "title" => $p->no_registrasi ?: "Permohonan #" . $p->id,
+                    "sub" =>
+                        ($p->layanan->nama_layanan ?? "-") .
+                        " — " .
+                        ucfirst($p->status),
+                    "url" => route("rt.riwayat.show", $p->id),
+                ]);
+            });
+
+        return response()->json($results->take(10)->values());
     }
 
     public function profilUpdate(Request $request)

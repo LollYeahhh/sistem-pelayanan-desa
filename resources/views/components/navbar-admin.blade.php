@@ -1,6 +1,6 @@
 {{-- Navbar Admin - sesuai desain Figma Desktop-63 --}}
 <nav
-    class="fixed top-0 left-0 right-0 z-40 overflow-hidden border border-black/10 bg-[#d8e7ff] h-[83px]"
+    class="fixed top-0 left-0 right-0 z-40 border border-black/10 bg-[#d8e7ff] h-[83px]"
 >
     <div class="flex h-full items-center px-6 lg:px-[62px]">
         {{-- Hamburger Button - dari Figma: bg-[#c9deff] border rounded-[4px] --}}
@@ -43,18 +43,39 @@
 
         {{-- Right: Search + Notif + Profile --}}
         <div class="flex items-center gap-8">
-            {{-- Search Bar - dari Figma: bg-[#f8fafc] border-[#f3f3f3] rounded-[26px] w-[303px] px-[19px] py-[13px] --}}
-            <div
-                class="hidden w-[303px] items-center gap-[17px] rounded-[26px] border border-[#f3f3f3] bg-[#f8fafc] px-[19px] py-[10px] md:flex"
-            >
-                <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-                <input
-                    type="text"
-                    placeholder="Cari Data"
-                    class="bg-transparent border-none outline-none text-[12px] font-normal text-black/30 placeholder-black/30 w-full"
-                />
+            {{-- Search Bar --}}
+            <div class="relative hidden md:block" id="adminSearchWrapper">
+                <div
+                    class="flex w-[303px] items-center gap-[17px] rounded-[26px] border border-[#f3f3f3] bg-[#f8fafc] px-[19px] py-[10px]"
+                >
+                    <svg class="h-[22px] w-[22px] shrink-0 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                    <input
+                        id="adminSearchInput"
+                        type="text"
+                        placeholder="Cari Data"
+                        autocomplete="off"
+                        class="bg-transparent border-none outline-none text-[12px] font-normal text-[#0f172a] placeholder-black/30 w-full"
+                    />
+                    <svg id="adminSearchSpinner" class="hidden h-4 w-4 shrink-0 animate-spin text-black/30" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </div>
+                {{-- Search Results Dropdown --}}
+                <div
+                    id="adminSearchResults"
+                    class="absolute left-0 top-[48px] z-50 hidden w-[360px] max-h-[400px] overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-xl"
+                >
+                    <div id="adminSearchList" class="py-2"></div>
+                    <div
+                        id="adminSearchEmpty"
+                        class="hidden px-4 py-6 text-center text-sm text-gray-400"
+                    >
+                        Tidak ada hasil ditemukan
+                    </div>
+                </div>
             </div>
 
             {{-- Notifikasi - dari Figma: size-[39px] dengan titik merah --}}
@@ -248,4 +269,132 @@
         );
     });
     observer.observe(sidebar, { attributes: true, attributeFilter: ["class"] });
+</script>
+
+<script>
+    (function () {
+        const input = document.getElementById("adminSearchInput");
+        const wrapper = document.getElementById("adminSearchWrapper");
+        const results = document.getElementById("adminSearchResults");
+        const list = document.getElementById("adminSearchList");
+        const empty = document.getElementById("adminSearchEmpty");
+        const spinner = document.getElementById("adminSearchSpinner");
+
+        if (!input) return;
+
+        let debounceTimer = null;
+        const searchUrl = "{{ route('admin.search') }}";
+
+        const typeIcons = {
+            Warga: '<svg class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>',
+            Layanan:
+                '<svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>',
+            Pengajuan:
+                '<svg class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51"/></svg>',
+            Aduan: '<svg class="h-4 w-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m-9 8.25h10.125c1.243 0 2.25-1.007 2.25-2.25V6.75c0-1.243-1.007-2.25-2.25-2.25H6.375c-1.243 0-2.25 1.007-2.25 2.25v13.5l3.375-2.25z"/></svg>',
+        };
+
+        const typeBadgeColors = {
+            Warga: "bg-blue-50 text-blue-600",
+            Layanan: "bg-green-50 text-green-600",
+            Pengajuan: "bg-amber-50 text-amber-600",
+            Aduan: "bg-red-50 text-red-500",
+        };
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderResults(data) {
+            list.innerHTML = "";
+            empty.classList.add("hidden");
+
+            if (data.length === 0) {
+                empty.classList.remove("hidden");
+                results.classList.remove("hidden");
+                return;
+            }
+
+            data.forEach(function (item) {
+                const icon = typeIcons[item.type] || typeIcons.Layanan;
+                const badgeColor =
+                    typeBadgeColors[item.type] || "bg-gray-50 text-gray-600";
+                const a = document.createElement("a");
+                a.href = item.url;
+                a.className =
+                    "flex items-center gap-3 px-4 py-2.5 hover:bg-[#F8FAFC] transition-colors";
+                a.innerHTML =
+                    '<div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9]">' +
+                    icon +
+                    "</div>" +
+                    '<div class="min-w-0 flex-1">' +
+                    '<p class="truncate text-sm font-semibold text-[#0f172a]">' +
+                    escapeHtml(item.title) +
+                    "</p>" +
+                    '<p class="truncate text-xs text-gray-400 mt-0.5">' +
+                    escapeHtml(item.sub) +
+                    "</p>" +
+                    "</div>" +
+                    '<span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ' +
+                    badgeColor +
+                    '">' +
+                    escapeHtml(item.type) +
+                    "</span>";
+                list.appendChild(a);
+            });
+
+            results.classList.remove("hidden");
+        }
+
+        function doSearch() {
+            const q = input.value.trim();
+            if (q.length < 2) {
+                results.classList.add("hidden");
+                spinner.classList.add("hidden");
+                return;
+            }
+
+            spinner.classList.remove("hidden");
+
+            fetch(searchUrl + "?q=" + encodeURIComponent(q), {
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            })
+                .then((r) => r.json())
+                .then((data) => {
+                    spinner.classList.add("hidden");
+                    renderResults(data);
+                })
+                .catch(() => {
+                    spinner.classList.add("hidden");
+                    results.classList.add("hidden");
+                });
+        }
+
+        input.addEventListener("input", function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(doSearch, 300);
+        });
+
+        input.addEventListener("focus", function () {
+            if (input.value.trim().length >= 2) doSearch();
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!wrapper.contains(e.target)) {
+                results.classList.add("hidden");
+            }
+        });
+
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                results.classList.add("hidden");
+                input.blur();
+            }
+        });
+    })();
 </script>
