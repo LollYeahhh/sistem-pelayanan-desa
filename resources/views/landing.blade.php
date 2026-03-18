@@ -153,11 +153,12 @@
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 lg:gap-8"
             >
                 @forelse ($layanan as $item)
-                    <div
-                        class="flex flex-col items-center group cursor-pointer"
+                    <a
+                        href="{{ route('login') }}"
+                        class="flex flex-col items-center group cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-4"
                     >
                         <div
-                            class="bg-white rounded-[11px] w-[140px] h-[140px] lg:w-[158px] lg:h-[158px] flex items-center justify-center shadow-sm hover:shadow-md transition-shadow duration-300"
+                            class="bg-white rounded-[11px] w-[140px] h-[140px] lg:w-[158px] lg:h-[158px] flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md"
                         >
                             @if ($item->icon_path)
                                 <img
@@ -176,7 +177,7 @@
                             @endif
                         </div>
                         <p class="text-[14px] font-medium text-black text-center mt-2 leading-[28px] w-[140px] lg:w-[178px]">{{ $item->nama_layanan }}</p>
-                    </div>
+                    </a>
                 @empty
                     <div class="col-span-full text-center py-16">
                         <p class="text-[#6b7280] text-base">Belum ada layanan yang tersedia saat ini.</p>
@@ -322,7 +323,32 @@
                 <div
                     class="w-full lg:w-[749px] bg-white rounded-[40px] shadow-[0px_0px_9.8px_0px_rgba(0,0,0,0.09)] px-[54px] py-[39px]"
                 >
-                    <form action="#" method="POST" class="space-y-[29px]">
+                    @if (session("aduan_success"))
+                        <div
+                            class="mb-6 rounded-[18px] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
+                        >
+                            {{
+                                session(
+                                    "aduan_success",
+                                )
+                            }}
+                        </div>
+                    @endif
+
+                    @if ($errors->aduanForm->any())
+                        <div
+                            class="mb-6 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+                        >
+                            Mohon periksa kembali data aduan yang Anda isi.
+                        </div>
+                    @endif
+
+                    <form
+                        action="{{ route('aduan.store') }}"
+                        method="POST"
+                        enctype="multipart/form-data"
+                        class="space-y-[29px]"
+                    >
                         @csrf
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-[33px]">
                             <div class="flex flex-col gap-[17px]">
@@ -331,9 +357,14 @@
                                 >
                                 <input
                                     type="text"
+                                    name="nama_depan"
+                                    value="{{ old('nama_depan') }}"
                                     placeholder="Masukkan nama depan"
                                     class="w-full bg-[#f8f8f8] border border-[#e1e1e1] rounded-[18px] h-[51px] px-[14px] text-[12px] placeholder-black/30 focus:ring-primary focus:border-primary"
                                 />
+                                @error ("nama_depan", "aduanForm")
+                                    <p class="text-[12px] text-red-500">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div class="flex flex-col gap-[17px]">
                                 <label class="text-[16px] font-bold text-black"
@@ -341,9 +372,14 @@
                                 >
                                 <input
                                     type="text"
+                                    name="nama_belakang"
+                                    value="{{ old('nama_belakang') }}"
                                     placeholder="Masukkan nama belakang"
                                     class="w-full bg-[#f8f8f8] border border-[#e1e1e1] rounded-[18px] h-[51px] px-[14px] text-[12px] placeholder-black/30 focus:ring-primary focus:border-primary"
                                 />
+                                @error ("nama_belakang", "aduanForm")
+                                    <p class="text-[12px] text-red-500">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                         <div class="flex flex-col gap-[17px]">
@@ -352,43 +388,157 @@
                             >
                             <input
                                 type="email"
+                                name="email"
+                                value="{{ old('email') }}"
                                 placeholder="Masukkan alamat email"
                                 class="w-full bg-[#f8f8f8] border border-[#e1e1e1] rounded-[18px] h-[51px] px-[14px] text-[12px] placeholder-black/30 focus:ring-primary focus:border-primary"
                             />
+                            @error ("email", "aduanForm")
+                                <p class="text-[12px] text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="flex flex-col gap-[17px]">
                             <label class="text-[16px] font-bold text-black"
                                 >Laporkan Aduan</label
                             >
                             <textarea
+                                name="isi_aduan"
                                 rows="4"
                                 placeholder="Tuliskan laporan anda"
                                 class="w-full bg-[#f8f8f8] border border-[#e1e1e1] rounded-[11px] px-[14px] py-3 text-[12px] placeholder-black/30 resize-none focus:ring-primary focus:border-primary"
-                            ></textarea>
+                                >{{
+                                    old(
+                                        "isi_aduan",
+                                    )
+                                }}</textarea
+                            >
+                            @error ("isi_aduan", "aduanForm")
+                                <p class="text-[12px] text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="flex flex-col gap-[17px]">
                             <label class="text-[16px] font-bold text-black"
                                 >Lampiran</label
                             >
-                            <div class="relative">
+                            <div
+                                class="relative w-full bg-[#f8f8f8] border border-dashed border-[#c5c5c5] rounded-[18px] px-[14px] py-5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/50 hover:bg-[#f0f4ff] transition-all duration-200"
+                                onclick="
+                                    document
+                                        .getElementById('lampiran-input')
+                                        .click()
+                                "
+                            >
                                 <input
                                     type="file"
-                                    class="w-full bg-[#f8f8f8] border border-[#e1e1e1] rounded-[18px] h-[51px] pl-12 pr-4 text-[12px] text-black/30 file:hidden"
+                                    id="lampiran-input"
+                                    name="lampiran"
+                                    accept=".jpg,.jpeg,.png,.pdf"
+                                    class="hidden"
+                                    onchange="updateFileName(this)"
                                 />
-                                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-black/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                <svg class="w-8 h-8 text-black/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                                 </svg>
+                                <p id="lampiran-text" class="text-[12px] text-black/40 text-center">
+                                    Klik untuk memilih file<br />
+                                    <span class="text-[11px] text-black/30"
+                                        >Format: JPG, PNG, PDF — Maks 2MB</span
+                                    >
+                                </p>
                             </div>
+                            @error ("lampiran", "aduanForm")
+                                <p class="text-[12px] text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="flex justify-center pt-2">
                             <button
+                                id="btn-kirim-aduan"
                                 type="submit"
-                                class="bg-[#a8c3ff] border border-[#8bafff] text-white font-semibold text-[14px] h-[54px] px-20 rounded-[27px] hover:bg-[#2563eb] hover:border-[#2563eb] transition w-full sm:w-[543px]"
+                                disabled
+                                class="bg-[#a8c3ff] border border-[#8bafff] text-white font-semibold text-[14px] h-[54px] px-20 rounded-[27px] transition w-full sm:w-[543px] opacity-50 cursor-not-allowed"
                             >
                                 Kirim Aduan
                             </button>
                         </div>
                     </form>
+
+                    <script>
+                        function updateFileName(input) {
+                            const textEl =
+                                document.getElementById("lampiran-text");
+                            if (input.files && input.files.length > 0) {
+                                textEl.innerHTML =
+                                    '<span class="text-black/70 font-medium">' +
+                                    input.files[0].name +
+                                    "</span>";
+                            } else {
+                                textEl.innerHTML =
+                                    'Klik untuk memilih file<br><span class="text-[11px] text-black/30">Format: JPG, PNG, PDF — Maks 2MB</span>';
+                            }
+                            toggleAduanButton();
+                        }
+
+                        (function () {
+                            const namaDepan = document.querySelector(
+                                'input[name="nama_depan"]',
+                            );
+                            const namaBelakang = document.querySelector(
+                                'input[name="nama_belakang"]',
+                            );
+                            const email = document.querySelector(
+                                'input[name="email"]',
+                            );
+                            const isiAduan = document.querySelector(
+                                'textarea[name="isi_aduan"]',
+                            );
+                            const btn =
+                                document.getElementById("btn-kirim-aduan");
+
+                            function toggleBtn() {
+                                const filled =
+                                    namaDepan.value.trim() !== "" &&
+                                    namaBelakang.value.trim() !== "" &&
+                                    email.value.trim() !== "" &&
+                                    isiAduan.value.trim() !== "";
+
+                                if (filled) {
+                                    btn.disabled = false;
+                                    btn.classList.remove(
+                                        "opacity-50",
+                                        "cursor-not-allowed",
+                                    );
+                                    btn.classList.add(
+                                        "hover:bg-[#2563eb]",
+                                        "hover:border-[#2563eb]",
+                                        "cursor-pointer",
+                                    );
+                                } else {
+                                    btn.disabled = true;
+                                    btn.classList.add(
+                                        "opacity-50",
+                                        "cursor-not-allowed",
+                                    );
+                                    btn.classList.remove(
+                                        "hover:bg-[#2563eb]",
+                                        "hover:border-[#2563eb]",
+                                        "cursor-pointer",
+                                    );
+                                }
+                            }
+
+                            // Expose for file input callback
+                            window.toggleAduanButton = toggleBtn;
+
+                            [namaDepan, namaBelakang, email, isiAduan].forEach(
+                                function (el) {
+                                    el.addEventListener("input", toggleBtn);
+                                },
+                            );
+
+                            // Run on page load (for old() values)
+                            toggleBtn();
+                        })();
+                    </script>
                 </div>
             </div>
         </div>

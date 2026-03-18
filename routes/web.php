@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AduanMasyarakatController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\AduanMasyarakatController as AdminAduanMasyarakatController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\LayananController as AdminLayananController;
 use App\Http\Controllers\Admin\FormBuilderController as AdminFormBuilderController;
@@ -21,6 +23,9 @@ Route::get("/", function () {
     $layanan = Layanan::where("is_active", true)->get();
     return view("landing", compact("layanan"));
 })->name("home");
+Route::post("/aduan", [AduanMasyarakatController::class, "store"])->name(
+    "aduan.store",
+);
 
 // ==========================================
 // AUTH
@@ -144,6 +149,23 @@ Route::middleware(["auth", "role:admin"])
         Route::get("/arsip", [AdminArsipController::class, "index"])->name(
             "arsip.index",
         );
+
+        // Aduan Masyarakat
+        Route::get("/aduan", [AdminAduanMasyarakatController::class, "index"])->name(
+            "aduan.index",
+        );
+        Route::get("/aduan/{aduan}", [
+            AdminAduanMasyarakatController::class,
+            "show",
+        ])->name("aduan.show");
+        Route::patch("/aduan/{aduan}/status", [
+            AdminAduanMasyarakatController::class,
+            "updateStatus",
+        ])->name("aduan.status");
+        Route::get("/aduan/{aduan}/lampiran", [
+            AdminAduanMasyarakatController::class,
+            "downloadLampiran",
+        ])->name("aduan.lampiran");
 
         // Laporan Monografi
         Route::get("/monografi", [

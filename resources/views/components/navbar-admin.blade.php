@@ -205,6 +205,17 @@
         </a>
 
         <a
+            href="{{ route('admin.aduan.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition
+                  {{ request()->routeIs('admin.aduan.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}"
+        >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m-9 8.25h10.125c1.243 0 2.25-1.007 2.25-2.25V6.75c0-1.243-1.007-2.25-2.25-2.25H6.375c-1.243 0-2.25 1.007-2.25 2.25v13.5l3.375-2.25z" />
+            </svg>
+            Aduan Masyarakat
+        </a>
+
+        <a
             href="{{ route('admin.monografi.index') }}"
             class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition
                   {{ request()->routeIs('admin.monografi.*') ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50' }}"
