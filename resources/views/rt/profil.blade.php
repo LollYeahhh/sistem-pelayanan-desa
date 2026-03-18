@@ -14,7 +14,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-extrabold text-[#0F172A]">{{ $user->nama_lengkap }}</h1>
-                    <p class="mt-1 text-sm text-[#64748B]">NIK: {{ $user->nik ?? "-" }}</p>
+                    <p class="mt-1 text-sm text-[#64748B]">NIK: {{ $user->nik ?: "-" }}</p>
                     <span class="mt-2 inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                         Role RT
                     </span>
@@ -35,7 +35,16 @@
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">NIK</label>
-                        <input type="text" value="{{ $user->nik }}" class="h-[48px] w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-[#94A3B8]" disabled />
+                        @if (blank($user->nik))
+                            <input type="text" name="nik" value="{{ old('nik', $user->nik) }}" maxlength="16" inputmode="numeric" placeholder="Masukkan 16 digit NIK" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                            <p class="mt-1 text-xs text-[#94A3B8]">NIK hanya dapat diisi sekali setelah akun dibuat.</p>
+                        @else
+                            <input type="text" value="{{ $user->nik }}" class="h-[48px] w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 text-sm text-[#94A3B8]" disabled />
+                            <p class="mt-1 text-xs text-[#94A3B8]">NIK tidak dapat diubah.</p>
+                        @endif
+                        @error ("nik")
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Tempat Lahir</label>

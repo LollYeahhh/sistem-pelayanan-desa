@@ -33,6 +33,23 @@
             </button>
         </div>
     @endif
+    @if (session("error"))
+        <div
+            id="flash-error"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm flex items-center justify-between"
+        >
+            <span>{{ session("error") }}</span>
+            <button
+                onclick="this.parentElement.remove()"
+                class="text-red-500"
+            >
+                &times;
+            </button>
+        </div>
+    @endif
+    @php
+        $isPendingVerification = ! $user->is_verified;
+    @endphp
     {{-- Profile Card --}}
     <div class="bg-white rounded-2xl border border-gray-light p-6 mb-6">
         <div class="flex items-center gap-4">
@@ -63,16 +80,22 @@
                                     : "Warga Tetap"
                         }}</span
                     >
-                    <span
-                        class="text-xs font-bold px-3 py-1 rounded-full 
-    {{ $user->status_akun === 'aktif' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500' }}"
-                    >
-                        {{
-                            $user->status_akun === "aktif"
-                                    ? "Aktif"
-                                    : "Nonaktif"
-                        }}
-                    </span>
+                    @if ($isPendingVerification)
+                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-600">
+                            Perlu Verifikasi
+                        </span>
+                    @else
+                        <span
+                            class="text-xs font-bold px-3 py-1 rounded-full 
+        {{ $user->status_akun === 'aktif' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500' }}"
+                        >
+                            {{
+                                $user->status_akun === "aktif"
+                                        ? "Aktif"
+                                        : "Nonaktif"
+                            }}
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -83,7 +106,7 @@
             @php
                 $fields = [
                     "Nama Lengkap" => $user->nama_lengkap,
-                    "NIK" => $user->nik,
+                    "NIK" => $user->nik ?: "-",
                     "Tempat Lahir" => $user->tempat_lahir ?? "-",
                     "Tanggal Lahir" => $user->tanggal_lahir
                         ? date("d/m/Y", strtotime($user->tanggal_lahir))
@@ -110,24 +133,41 @@
     </div>
     {{-- Actions --}}
     <div class="flex items-center justify-end gap-3">
-        <form
-            method="POST"
-            action="{{ route('admin.warga.toggle', $user) }}"
-            onsubmit="return confirm('Yakin ubah status akun ini?');"
-        >
-            @csrf
-            @method ("PATCH")
-            <button
-                type="submit"
-                class="px-6 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+        @if ($isPendingVerification)
+            <form
+                method="POST"
+                action="{{ route('admin.warga.verify', $user) }}"
+                onsubmit="return confirm('Verifikasi dan aktifkan akun ini?');"
             >
-                {{
-                    $user->status_akun === "aktif"
-                            ? "Nonaktifkan Akun"
-                            : "Aktifkan Akun"
-                }}
-            </button>
-        </form>
+                @csrf
+                @method ("PATCH")
+                <button
+                    type="submit"
+                    class="px-6 py-3 rounded-xl bg-amber-500 text-sm font-semibold text-white transition hover:bg-amber-600"
+                >
+                    Verifikasi & Aktifkan
+                </button>
+            </form>
+        @else
+            <form
+                method="POST"
+                action="{{ route('admin.warga.toggle', $user) }}"
+                onsubmit="return confirm('Yakin ubah status akun ini?');"
+            >
+                @csrf
+                @method ("PATCH")
+                <button
+                    type="submit"
+                    class="px-6 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+                >
+                    {{
+                        $user->status_akun === "aktif"
+                                ? "Nonaktifkan Akun"
+                                : "Aktifkan Akun"
+                    }}
+                </button>
+            </form>
+        @endif
         <button
             onclick="openModal('editModal')"
             class="px-6 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover transition"
@@ -204,8 +244,8 @@
                             type="text"
                             name="nik"
                             value="{{ old('nik', $user->nik) }}"
-                            required
-                            maxlength="20"
+                            maxlength="16"
+                            placeholder="Masukkan 16 digit NIK"
                             class="w-full bg-[#F8FAFC] border border-[#F3F3F3] rounded-2xl h-[51px] px-4 text-sm text-dark placeholder-gray-400 focus:ring-primary focus:border-primary"
                         />
                         @error ("nik")
@@ -374,7 +414,9 @@
         }
         setTimeout(() => {
             const f = document.getElementById("flash-msg");
+            const e = document.getElementById("flash-error");
             if (f) f.style.display = "none";
+            if (e) e.style.display = "none";
         }, 3000);
     </script>
 

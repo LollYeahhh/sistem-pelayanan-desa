@@ -113,6 +113,10 @@ Route::middleware(["auth", "role:admin"])
             AdminWargaController::class,
             "updateRole",
         ])->name("warga.role");
+        Route::patch("/warga/{user}/verify", [
+            AdminWargaController::class,
+            "verify",
+        ])->name("warga.verify");
         Route::patch("/warga/{user}/toggle", [
             AdminWargaController::class,
             "toggleStatus",
@@ -199,6 +203,7 @@ Route::middleware(["auth", "role:rt"])
             "update",
         ])->name("monografi.update");
 
+        Route::middleware("verified.active")->group(function () {
         Route::get("/ajukan", [RTController::class, "ajukanIndex"])->name(
             "ajukan.index",
         );
@@ -208,6 +213,7 @@ Route::middleware(["auth", "role:rt"])
         Route::post("/ajukan/{layanan}", [RTController::class, "ajukanStore"])->name(
             "ajukan.store",
         );
+        });
 
         Route::get("/riwayat", [RTController::class, "riwayat"])->name(
             "riwayat.index",
@@ -235,6 +241,7 @@ Route::middleware(["auth", "role:warga"])
         ])->name("dashboard");
 
         // Ajukan Layanan (Multi-step)
+        Route::middleware("verified.active")->group(function () {
         Route::get("/ajukan", [
             App\Http\Controllers\Warga\WargaController::class,
             "ajukanIndex",
@@ -247,6 +254,7 @@ Route::middleware(["auth", "role:warga"])
             App\Http\Controllers\Warga\WargaController::class,
             "ajukanStore",
         ])->name("ajukan.store");
+        });
 
         // Riwayat & Status
         Route::get("/riwayat", [

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -43,13 +42,15 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             "nama_lengkap" => "required|string|max:255",
-            "nik" => "required|string|size:16|unique:users",
             "email" => "required|email|unique:users",
             "no_hp" => "required|string|max:20",
+            "password" => "required|string|min:8|confirmed",
         ]);
 
-        $validated["password"] = Hash::make($validated["password"]);
         $validated["role"] = "warga";
+        $validated["nik"] = null;
+        $validated["is_verified"] = false;
+        $validated["status_akun"] = "nonaktif";
 
         User::create($validated);
 

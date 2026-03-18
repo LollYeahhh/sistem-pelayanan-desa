@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RTController extends Controller
 {
@@ -165,6 +166,11 @@ class RTController extends Controller
 
         $validated = $request->validate([
             "nama_lengkap" => "required|string|max:255",
+            "nik" => [
+                "nullable",
+                "digits:16",
+                Rule::unique("users", "nik")->ignore($user->id),
+            ],
             "tempat_lahir" => "nullable|string|max:100",
             "tanggal_lahir" => "nullable|date",
             "jenis_kelamin" => "nullable|in:Laki-laki,Perempuan",
@@ -178,9 +184,12 @@ class RTController extends Controller
             "no_hp" => "nullable|string|max:20",
         ]);
 
+        if (filled($user->nik)) {
+            unset($validated["nik"]);
+        }
+
         $user->update($validated);
 
         return back()->with("success", "Profil RT berhasil diperbarui!");
     }
 }
-

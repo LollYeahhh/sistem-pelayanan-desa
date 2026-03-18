@@ -33,7 +33,7 @@
                     <h1 class="text-xl lg:text-2xl font-extrabold">
                         {{ $user->nama_lengkap }}
                     </h1>
-                    <p class="text-white/70 text-sm mt-1">NIK: {{ $user->nik ?? "-" }}</p>
+                    <p class="text-white/70 text-sm mt-1">NIK: {{ $user->nik ?: "-" }}</p>
                     <div class="flex items-center gap-2 mt-2">
                         @if ($user->is_verified)
                             <span
@@ -102,13 +102,29 @@
                             class="block text-sm font-semibold text-[#0f172a] mb-2"
                             >NIK</label
                         >
-                        <input
-                            type="text"
-                            value="{{ $user->nik }}"
-                            class="w-full bg-gray-100 border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#94a3b8] cursor-not-allowed"
-                            disabled
-                        />
-                        <p class="text-xs text-[#94a3b8] mt-1">NIK tidak dapat diubah</p>
+                        @if (blank($user->nik))
+                            <input
+                                type="text"
+                                name="nik"
+                                value="{{ old('nik', $user->nik) }}"
+                                maxlength="16"
+                                inputmode="numeric"
+                                placeholder="Masukkan 16 digit NIK"
+                                class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                            />
+                            <p class="text-xs text-[#94a3b8] mt-1">NIK hanya dapat diisi sekali setelah akun dibuat.</p>
+                        @else
+                            <input
+                                type="text"
+                                value="{{ $user->nik }}"
+                                class="w-full bg-gray-100 border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#94a3b8] cursor-not-allowed"
+                                disabled
+                            />
+                            <p class="text-xs text-[#94a3b8] mt-1">NIK tidak dapat diubah.</p>
+                        @endif
+                        @error ("nik")
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>

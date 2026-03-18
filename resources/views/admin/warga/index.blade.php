@@ -26,13 +26,14 @@
                     <th class="text-center text-sm font-semibold text-gray-500 px-6 py-4 w-[80px]">No</th>
                     <th class="text-left text-sm font-semibold text-gray-500 px-6 py-4">Nama & NIK</th>
                     <th class="text-center text-sm font-semibold text-gray-500 px-6 py-4 w-[150px]">Role</th>
-                    <th class="text-center text-sm font-semibold text-gray-500 px-6 py-4 w-[120px]">Status</th>
+                    <th class="text-center text-sm font-semibold text-gray-500 px-6 py-4 w-[170px]">Status</th>
                     <th class="text-center text-sm font-semibold text-gray-500 px-6 py-4 w-[150px]">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($warga as $i => $user)
                 @php
+                    $isPendingVerification = ! $user->is_verified;
                     $accountStatus = $user->status_akun ?? 'aktif';
                 @endphp
                 <tr class="border-b border-gray-50 hover:bg-gray-50/50">
@@ -44,7 +45,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-dark">{{ $user->nama_lengkap }}</p>
-                                <p class="text-xs text-gray">{{ $user->nik }}</p>
+                                <p class="text-xs text-gray">{{ $user->nik ?: '-' }}</p>
                             </div>
                         </div>
                     </td>
@@ -64,13 +65,22 @@
                         </form>
                     </td>
                     <td class="text-center px-6 py-5">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold {{ $accountStatus === 'aktif' ? 'text-green-600' : 'text-red-500' }}">
-                            <span class="w-2 h-2 rounded-full {{ $accountStatus === 'aktif' ? 'bg-green-500' : 'bg-red-400' }}"></span>
-                            {{ $accountStatus === 'aktif' ? 'Aktif' : 'Nonaktif' }}
-                        </span>
+                        @if($isPendingVerification)
+                            <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-amber-600">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                Perlu Verifikasi
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold {{ $accountStatus === 'aktif' ? 'text-green-600' : 'text-red-500' }}">
+                                <span class="w-2 h-2 rounded-full {{ $accountStatus === 'aktif' ? 'bg-green-500' : 'bg-red-400' }}"></span>
+                                {{ $accountStatus === 'aktif' ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        @endif
                     </td>
                     <td class="text-center px-6 py-5">
-                        <a href="{{ route('admin.warga.show', $user) }}" class="text-sm font-semibold text-primary hover:underline">Detail Profil</a>
+                        <div class="flex items-center justify-center">
+                            <a href="{{ route('admin.warga.show', $user) }}" class="text-sm font-semibold text-primary hover:underline">Detail Profil</a>
+                        </div>
                     </td>
                 </tr>
                 @empty

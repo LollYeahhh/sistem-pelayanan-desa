@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WargaController extends Controller
 {
@@ -36,7 +37,11 @@ class WargaController extends Controller
     {
         $validated = $request->validate([
             "nama_lengkap" => "required|string|max:255",
-            "nik" => "required|string|max:20",
+            "nik" => [
+                "nullable",
+                "digits:16",
+                Rule::unique("users", "nik")->ignore($user->id),
+            ],
             "tempat_lahir" => "nullable|string|max:100",
             "tanggal_lahir" => "nullable|date",
             "jenis_kelamin" => "nullable|in:Laki-laki,Perempuan",
@@ -80,8 +85,40 @@ class WargaController extends Controller
         );
     }
 
+    public function verify(User $user)
+    {
+        if (! in_array($user->role, ["warga", "rt"], true)) {
+            return redirect()
+                ->route("admin.warga.index")
+                ->with("error", "Pengguna ini tidak bisa diverifikasi dari Database Warga.");
+        }
+
+        if ($user->is_verified && $user->status_akun === "aktif") {
+            return back()->with("success", "Akun pengguna sudah aktif.");
+        }
+
+        $user->update([
+            "is_verified" => true,
+            "status_akun" => "aktif",
+        ]);
+
+        return back()->with(
+            "success",
+            "Akun pengguna berhasil diverifikasi dan diaktifkan.",
+        );
+    }
+
     public function toggleStatus(User $user)
     {
+        if (! $user->is_verified) {
+            return redirect()
+                ->route("admin.warga.show", $user)
+                ->with(
+                    "error",
+                    "Akun yang masih menunggu verifikasi tidak bisa diubah statusnya. Verifikasi akun terlebih dahulu.",
+                );
+        }
+
         $user->status_akun =
             $user->status_akun === "aktif" ? "nonaktif" : "aktif";
         $user->save();

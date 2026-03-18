@@ -23,10 +23,16 @@
         ->filter()
         ->first();
 
-    $statusLabel = $user->is_verified
-        ? "Terverifikasi Aktif"
-        : "Menunggu Verifikasi";
-    $statusClass = $user->is_verified ? "text-emerald-600" : "text-amber-600";
+    $canAjukan = $user->is_verified && $user->status_akun === "aktif";
+    $statusLabel = ! $user->is_verified
+        ? "Menunggu Verifikasi"
+        : ($user->status_akun === "aktif" ? "Aktif" : "Nonaktif");
+    $statusClass = ! $user->is_verified
+        ? "text-amber-600"
+        : ($user->status_akun === "aktif" ? "text-emerald-600" : "text-red-500");
+    $ajukanLockedMessage = ! $user->is_verified
+        ? "Menunggu verifikasi admin"
+        : "Akun sedang nonaktif";
 
     $layananPalettes = [
         ["bg" => "bg-[#DBF0FF]", "ring" => "bg-[#8FD4FF]"],
@@ -86,29 +92,50 @@
                 </p>
             </div>
 
-            <a
-                href="{{ route('warga.ajukan.index') }}"
-                class="inline-flex h-[50px] items-center gap-3 self-start rounded-[11px] bg-primary px-[15px] py-[9px] text-base font-semibold text-white shadow-[0_12px_30px_-18px_rgba(37,99,235,0.9)] transition hover:bg-primary-hover"
-            >
-                <span
-                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-white/10"
+            @if ($canAjukan)
+                <a
+                    href="{{ route('warga.ajukan.index') }}"
+                    class="inline-flex h-[50px] items-center gap-3 self-start rounded-[11px] bg-primary px-[15px] py-[9px] text-base font-semibold text-white shadow-[0_12px_30px_-18px_rgba(37,99,235,0.9)] transition hover:bg-primary-hover"
                 >
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-white/10"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                    </span>
+                    Ajukan Surat
+                </a>
+            @else
+                <span
+                    class="inline-flex h-[50px] cursor-not-allowed items-center gap-3 self-start rounded-[11px] bg-[#CBD5E1] px-[15px] py-[9px] text-base font-semibold text-white"
+                >
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/20 bg-white/10"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                    </span>
+                    Ajukan Surat
                 </span>
-                Ajukan Surat
-            </a>
+            @endif
         </section>
 
         <section class="space-y-4 lg:space-y-5">
             <div class="flex items-center justify-end">
-                <a
-                    href="{{ route('warga.ajukan.index') }}"
-                    class="text-base font-semibold leading-7 text-primary transition hover:text-primary-hover"
-                >
-                    Lihat Selengkapnya
-                </a>
+                @if ($canAjukan)
+                    <a
+                        href="{{ route('warga.ajukan.index') }}"
+                        class="text-base font-semibold leading-7 text-primary transition hover:text-primary-hover"
+                    >
+                        Lihat Selengkapnya
+                    </a>
+                @else
+                    <span class="text-base font-semibold leading-7 text-[#94A3B8]">
+                        {{ $ajukanLockedMessage }}
+                    </span>
+                @endif
             </div>
 
             @if ($layananPreview->isNotEmpty())
@@ -117,10 +144,14 @@
                         @php
                             $palette = $layananPalettes[$loop->index % count($layananPalettes)];
                         @endphp
-                        <a
-                            href="{{ route('warga.ajukan.form', $item) }}"
-                            class="group flex flex-col items-center"
-                        >
+                        @if ($canAjukan)
+                            <a
+                                href="{{ route('warga.ajukan.form', $item) }}"
+                                class="group flex flex-col items-center"
+                            >
+                        @else
+                            <div class="flex flex-col items-center opacity-60">
+                        @endif
                             <div
                                 class="flex h-[158px] w-full max-w-[178px] items-center justify-center rounded-[11px] bg-white shadow-[0_18px_34px_-30px_rgba(17,24,39,0.45)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_24px_40px_-28px_rgba(37,99,235,0.35)]"
                             >
@@ -149,7 +180,11 @@
                             >
                                 {{ $item->nama_layanan }}
                             </p>
-                        </a>
+                        @if ($canAjukan)
+                            </a>
+                        @else
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             @else
@@ -266,12 +301,18 @@
                         <p class="mt-4 text-sm font-semibold text-[#111827]">
                             Belum ada permohonan surat yang bisa ditampilkan.
                         </p>
-                        <a
-                            href="{{ route('warga.ajukan.index') }}"
-                            class="mt-3 inline-flex text-sm font-semibold text-primary hover:text-primary-hover"
-                        >
-                            Ajukan surat sekarang
-                        </a>
+                        @if ($canAjukan)
+                            <a
+                                href="{{ route('warga.ajukan.index') }}"
+                                class="mt-3 inline-flex text-sm font-semibold text-primary hover:text-primary-hover"
+                            >
+                                Ajukan surat sekarang
+                            </a>
+                        @else
+                            <p class="mt-3 text-sm font-semibold text-[#94A3B8]">
+                                {{ ! $user->is_verified ? 'Ajukan layanan tersedia setelah admin memverifikasi akun.' : 'Ajukan layanan dinonaktifkan sementara oleh admin.' }}
+                            </p>
+                        @endif
                     </div>
                 @endforelse
             </div>

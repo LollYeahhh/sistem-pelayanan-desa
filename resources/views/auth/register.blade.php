@@ -36,18 +36,6 @@
                     @enderror
                 </div>
 
-                {{-- NIK --}}
-                <div>
-                    <label class="block text-base font-bold text-black mb-4 leading-5">NIK</label>
-                    <input type="text" name="nik" value="{{ old('nik') }}" maxlength="16"
-                           placeholder="Masukkan 16 digit NIK"
-                           class="w-full bg-[#F8FAFC] border border-[#F3F3F3] rounded-[18px] h-[51px] px-4 text-sm text-black placeholder-black/30 focus:ring-primary focus:border-primary"
-                           required>
-                    @error('nik')
-                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-                    @enderror
-                </div>
-
                 {{-- Email --}}
                 <div>
                     <label class="block text-base font-bold text-black mb-4 leading-5">Email</label>
@@ -113,7 +101,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                     </svg>
                     <p class="text-xs text-primary leading-5">
-                        Data Anda akan diverifikasi oleh sistem kependudukan desa untuk memastikan keaslian identitas sebelum akun diaktifkan.
+                        Akun dapat dibuat tanpa NIK. Lengkapi NIK Anda nanti melalui halaman profil setelah berhasil masuk ke sistem.
                     </p>
                 </div>
 
