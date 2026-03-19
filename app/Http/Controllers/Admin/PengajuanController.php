@@ -57,9 +57,17 @@ class PengajuanController extends Controller
             $formVersion->sections->flatMap(fn($section) => $section->fields),
             $permohonan->user,
         );
-        $identitySummary = PengajuanIdentityMapper::buildIdentitySummary($permohonan->user);
+        [$identityFieldsUsed, $additionalSections, $lampiranCards] = $this->buildDisplayGroups(
+            $permohonan,
+            $fieldStates,
+        );
 
-        return view("admin.pengajuan.show", compact("permohonan", "fieldStates", "identitySummary"));
+        return view("admin.pengajuan.show", compact(
+            "permohonan",
+            "identityFieldsUsed",
+            "additionalSections",
+            "lampiranCards",
+        ));
     }
 
     public function previewLampiran(PermohonanSurat $permohonan, LayananField $field): BinaryFileResponse
@@ -142,6 +150,92 @@ class PengajuanController extends Controller
         }
 
         return [$path, $mimeType];
+    }
+
+    protected function buildDisplayGroups(PermohonanSurat $permohonan, array $fieldStates): array
+    {
+        $dataLookup = $permohonan->data->keyBy("field_id");
+        $identityFieldsUsed = collect();
+        $additionalSections = collect();
+        $lampiranCards = collect();
+
+        foreach ($permohonan->layanan->sections as $section) {
+            $sectionFields = collect();
+
+            foreach ($section->fields as $field) {
+                $fieldState = $fieldStates[$field->id] ?? [
+                    "is_identity" => false,
+                    "is_locked" => false,
+                    "value" => null,
+                ];
+                $datum = $dataLookup->get($field->id);
+                $submittedValue = trim((string) ($datum->value ?? ""));
+
+                if ($field->tipe_input === "file") {
+                    $lampiran = $permohonan->lampiran->firstWhere("nama_dokumen", $field->label);
+                    $filePath = $lampiran?->file_path ?? ($datum->value ?? null);
+
+                    if (!$filePath || !Storage::disk("public")->exists($filePath)) {
+                        continue;
+                    }
+
+                    $mimeType = $lampiran?->file_type ?: Storage::disk("public")->mimeType($filePath);
+                    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                    $isImage = $mimeType
+                        ? str_starts_with($mimeType, "image/")
+                        : in_array($extension, ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"]);
+                    $isPdf = $mimeType === "application/pdf" || $extension === "pdf";
+
+                    $lampiranCards->push([
+                        "label" => $field->label,
+                        "section" => $section->nama_section,
+                        "path" => $filePath,
+                        "filename" => basename($filePath),
+                        "status" => "Telah Diunggah",
+                        "is_image" => $isImage,
+                        "is_pdf" => $isPdf,
+                        "is_previewable" => $isImage || $isPdf,
+                        "preview_type" => $isImage ? "image" : ($isPdf ? "pdf" : "file"),
+                        "preview_url" => route("admin.pengajuan.lampiran.preview", [$permohonan, $field]),
+                        "download_url" => route("admin.pengajuan.lampiran.download", [$permohonan, $field]),
+                    ]);
+
+                    continue;
+                }
+
+                if ($fieldState["is_identity"]) {
+                    $displayValue = $fieldState["is_locked"]
+                        ? trim((string) ($fieldState["value"] ?? ""))
+                        : $submittedValue;
+
+                    if ($displayValue !== "") {
+                        $identityFieldsUsed->push([
+                            "label" => $field->label,
+                            "value" => $displayValue,
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                if ($submittedValue !== "") {
+                    $sectionFields->push([
+                        "label" => $field->label,
+                        "value" => $submittedValue,
+                        "is_textarea" => $field->tipe_input === "textarea",
+                    ]);
+                }
+            }
+
+            if ($sectionFields->isNotEmpty()) {
+                $additionalSections->push([
+                    "title" => $section->nama_section,
+                    "fields" => $sectionFields,
+                ]);
+            }
+        }
+
+        return [$identityFieldsUsed, $additionalSections, $lampiranCards];
     }
 }
 

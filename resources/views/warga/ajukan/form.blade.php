@@ -224,16 +224,26 @@
                                         <div class="relative">
                                             <label
                                                 for="{{ $fieldName }}"
+                                                id="upload_box_{{ $field->id }}"
                                                 class="flex flex-col items-center justify-center w-full h-32 bg-[#f8fafc] border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition group"
                                             >
-                                                <svg class="w-8 h-8 text-[#94a3b8] group-hover:text-primary transition mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                <svg
+                                                    id="upload_icon_{{ $field->id }}"
+                                                    class="w-8 h-8 text-[#94a3b8] group-hover:text-primary transition mb-2"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                >
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                                                 </svg>
                                                 <span
+                                                    id="upload_title_{{ $field->id }}"
                                                     class="text-sm text-[#94a3b8] group-hover:text-primary font-medium transition"
                                                     >Klik untuk unggah {{ $field->label }}</span
                                                 >
                                                 <span
+                                                    id="upload_subtitle_{{ $field->id }}"
                                                     class="text-xs text-[#cbd5e1] mt-1"
                                                     >Maks. 2MB (JPG, PNG,
                                                     PDF)</span
@@ -252,10 +262,6 @@
                                                 }}
                                                 onchange="updateFileLabel(this)"
                                             />
-                                            <p
-                                                id="file_label_{{ $field->id }}"
-                                                class="text-xs text-primary font-medium mt-2 hidden"
-                                            ></p>
                                         </div>
                                         @break
                                 @endswitch
@@ -390,10 +396,57 @@
     <script>
         function updateFileLabel(input) {
             const fieldId = input.id.replace("field_", "");
-            const label = document.getElementById("file_label_" + fieldId);
+            const uploadBox = document.getElementById("upload_box_" + fieldId);
+            const uploadIcon = document.getElementById(
+                "upload_icon_" + fieldId,
+            );
+            const uploadTitle = document.getElementById(
+                "upload_title_" + fieldId,
+            );
+            const uploadSubtitle = document.getElementById(
+                "upload_subtitle_" + fieldId,
+            );
+
+            if (!uploadBox || !uploadIcon || !uploadTitle || !uploadSubtitle) {
+                return;
+            }
+
             if (input.files && input.files[0]) {
-                label.textContent = "📎 " + input.files[0].name;
-                label.classList.remove("hidden");
+                uploadBox.classList.remove(
+                    "border-dashed",
+                    "border-gray-200",
+                    "bg-[#f8fafc]",
+                );
+                uploadBox.classList.add(
+                    "border-solid",
+                    "border-emerald-300",
+                    "bg-emerald-50",
+                );
+
+                uploadIcon.classList.remove(
+                    "text-[#94a3b8]",
+                    "group-hover:text-primary",
+                );
+                uploadIcon.classList.add("text-emerald-500");
+                uploadIcon.innerHTML =
+                    '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m6 2.25a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />';
+
+                uploadTitle.classList.remove(
+                    "text-[#94a3b8]",
+                    "group-hover:text-primary",
+                );
+                uploadTitle.classList.add(
+                    "text-emerald-700",
+                    "font-semibold",
+                    "max-w-[92%]",
+                    "truncate",
+                );
+                uploadTitle.textContent = input.files[0].name;
+
+                uploadSubtitle.classList.remove("text-[#cbd5e1]");
+                uploadSubtitle.classList.add("text-emerald-600");
+                uploadSubtitle.textContent =
+                    "File berhasil dipilih • Klik untuk ganti";
             }
         }
 

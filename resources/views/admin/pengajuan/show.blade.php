@@ -9,80 +9,6 @@
             "disetujui" => "border-emerald-200 bg-emerald-50 text-emerald-600",
             "ditolak" => "border-red-200 bg-red-50 text-red-500",
         ];
-
-        $dataLookup = $permohonan->data->keyBy("field_id");
-        $additionalSections = collect();
-        $lampiranCards = collect();
-
-        foreach ($permohonan->layanan->sections as $section) {
-            $visibleFields = $section->fields
-                ->where("tipe_input", "!=", "file")
-                ->filter(function ($field) use ($dataLookup, $fieldStates) {
-                    $datum = $dataLookup->get($field->id);
-                    $value = trim((string) ($datum->value ?? ""));
-
-                    if ($value === "") {
-                        return false;
-                    }
-
-                    return !($fieldStates[$field->id]["is_locked"] ?? false);
-                })
-                ->values();
-
-            if ($visibleFields->isNotEmpty()) {
-                $additionalSections->push([
-                    "title" => $section->nama_section,
-                    "fields" => $visibleFields,
-                ]);
-            }
-
-            foreach ($section->fields->where("tipe_input", "file") as $field) {
-                $lampiran = $permohonan->lampiran->firstWhere(
-                    "nama_dokumen",
-                    $field->label,
-                );
-                $datum = $dataLookup->get($field->id);
-                $filePath = $lampiran?->file_path ?? ($datum->value ?? null);
-                $mimeType = $lampiran?->file_type;
-                $extension = $filePath
-                    ? strtolower(pathinfo($filePath, PATHINFO_EXTENSION))
-                    : null;
-                $isImage = $mimeType
-                    ? str_starts_with($mimeType, "image/")
-                    : in_array($extension, [
-                        "jpg",
-                        "jpeg",
-                        "png",
-                        "gif",
-                        "webp",
-                        "bmp",
-                        "svg",
-                    ]);
-                $isPdf = $mimeType === "application/pdf" || $extension === "pdf";
-                $isPreviewable = $isImage || $isPdf;
-
-                $previewUrl = $filePath
-                    ? route("admin.pengajuan.lampiran.preview", [$permohonan, $field])
-                    : null;
-                $downloadUrl = $filePath
-                    ? route("admin.pengajuan.lampiran.download", [$permohonan, $field])
-                    : null;
-
-                $lampiranCards->push([
-                    "label" => $field->label,
-                    "section" => $section->nama_section,
-                    "path" => $filePath,
-                    "filename" => $filePath ? basename($filePath) : null,
-                    "status" => $filePath ? "Telah Diunggah" : "Belum Diunggah",
-                    "is_image" => $isImage,
-                    "is_pdf" => $isPdf,
-                    "is_previewable" => $isPreviewable,
-                    "preview_type" => $isImage ? "image" : ($isPdf ? "pdf" : "file"),
-                    "preview_url" => $previewUrl,
-                    "download_url" => $downloadUrl,
-                ]);
-            }
-        }
     @endphp
     <div class="space-y-6">
         <div
@@ -129,36 +55,38 @@
             </div>
         @endif
 
-        <div
-            class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
-        >
-            <div class="mb-5 flex items-center gap-3">
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DBEAFE] text-primary"
-                >
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold text-[#0F172A]">
-                        Identitas Pemohon
-                    </h2>
-                    <p class="text-sm text-[#64748B]">Data ini dibaca dari profil pengguna yang terhubung dengan pengajuan.</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                @foreach ($identitySummary as $label => $value)
+        @if ($identityFieldsUsed->isNotEmpty())
+            <div
+                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+            >
+                <div class="mb-5 flex items-center gap-3">
                     <div
-                        class="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DBEAFE] text-primary"
                     >
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $label }}</p>
-                        <p class="mt-1.5 text-sm font-medium text-[#0F172A]">{{ $value }}</p>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                        </svg>
                     </div>
-                @endforeach
+                    <div>
+                        <h2 class="text-lg font-bold text-[#0F172A]">
+                            Identitas Pemohon
+                        </h2>
+                        <p class="text-sm text-[#64748B]">Hanya field identitas yang memang dipakai pada pengajuan ini.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    @foreach ($identityFieldsUsed as $field)
+                        <div
+                            class="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                        >
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field["label"] }}</p>
+                            <p class="mt-1.5 text-sm font-medium text-[#0F172A]">{{ $field["value"] }}</p>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @endif
 
         @if ($additionalSections->isNotEmpty())
             <div
@@ -190,18 +118,11 @@
                             </h3>
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 @foreach ($section["fields"] as $field)
-                                    @php
-                                        $value = $dataLookup->get($field->id)?->value;
-                                    @endphp
                                     <div
-                                        class="{{ $field->tipe_input === 'textarea' ? 'md:col-span-2' : '' }} rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                                        class="{{ $field['is_textarea'] ? 'md:col-span-2' : '' }} rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
                                     >
-                                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field->label }}</p>
-                                        <p class="mt-1.5 whitespace-pre-line text-sm font-medium text-[#0F172A]">{{
-                                            filled($value)
-                                                ? $value
-                                                : "-"
-                                        }}</p>
+                                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field["label"] }}</p>
+                                        <p class="mt-1.5 whitespace-pre-line text-sm font-medium text-[#0F172A]">{{ $field["value"] }}</p>
                                     </div>
                                 @endforeach
                             </div>
@@ -211,28 +132,28 @@
             </div>
         @endif
 
-        <div
-            class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
-        >
-            <div class="mb-5 flex items-center gap-3">
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F97316]"
-                >
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
-                    </svg>
+        @if ($lampiranCards->isNotEmpty())
+            <div
+                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+            >
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F97316]"
+                    >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-[#0F172A]">
+                            Lampiran Persyaratan Dokumen
+                        </h2>
+                        <p class="text-sm text-[#64748B]">Hanya dokumen yang benar-benar diunggah dalam pengajuan ini.</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-lg font-bold text-[#0F172A]">
-                        Lampiran Persyaratan Dokumen
-                    </h2>
-                    <p class="text-sm text-[#64748B]">Klik dokumen yang sudah diunggah untuk melihat pratinjau dan mengunduh berkas.</p>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                @foreach ($lampiranCards as $card)
-                    @if ($card["path"])
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($lampiranCards as $card)
                         <button
                             type="button"
                             onclick="openDocumentPreview(@js($card['label']), @js($card['preview_url']), @js($card['preview_type']), @js($card['download_url']), @js($card['filename']))"
@@ -259,29 +180,10 @@
                                 {{ $card["status"] }}
                             </span>
                         </button>
-                    @else
-                        <div
-                            class="flex min-h-[184px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#D8E2F1] bg-[#F8FAFC] px-5 py-6 text-center opacity-70"
-                        >
-                            <div
-                                class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-slate-200 text-slate-500"
-                            >
-                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                            </div>
-                            <p class="mt-4 line-clamp-2 text-base font-bold text-[#0F172A]">{{ $card["label"] }}</p>
-                            <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $card["section"] }}</p>
-                            <span
-                                class="mt-4 inline-flex rounded-full bg-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600"
-                            >
-                                {{ $card["status"] }}
-                            </span>
-                        </div>
-                    @endif
-                @endforeach
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @endif
 
         @if ($permohonan->status === "ditolak" && $permohonan->catatan)
             <div
