@@ -55,133 +55,95 @@
             </div>
         @endif
 
-        @if ($identityFieldsUsed->isNotEmpty())
-            <div
-                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
-            >
-                <div class="mb-5 flex items-center gap-3">
+        @if ($displaySections->isNotEmpty())
+            <div class="space-y-6">
+                @foreach ($displaySections as $section)
                     <div
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DBEAFE] text-primary"
+                        class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
                     >
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-[#0F172A]">
-                            Identitas Pemohon
-                        </h2>
-                        <p class="text-sm text-[#64748B]">Hanya field identitas yang memang dipakai pada pengajuan ini.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    @foreach ($identityFieldsUsed as $field)
-                        <div
-                            class="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
-                        >
-                            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field["label"] }}</p>
-                            <p class="mt-1.5 text-sm font-medium text-[#0F172A]">{{ $field["value"] }}</p>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        @if ($additionalSections->isNotEmpty())
-            <div
-                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
-            >
-                <div class="mb-5 flex items-center gap-3">
-                    <div
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E0F2FE] text-[#0284C7]"
-                    >
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7.5 4.5h9A2.25 2.25 0 0118.75 6.75v10.5A2.25 2.25 0 0116.5 19.5h-9A2.25 2.25 0 015.25 17.25V6.75A2.25 2.25 0 017.5 4.5z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-[#0F172A]">
-                            Data Formulir Tambahan
-                        </h2>
-                        <p class="text-sm text-[#64748B]">Field berikut memang diisi khusus saat pengajuan dan tidak berasal dari profil.</p>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    @foreach ($additionalSections as $section)
-                        <div>
-                            <h3
-                                class="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#64748B]"
+                        <div class="mb-5 flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
                             >
-                                {{ $section["title"] }}
-                            </h3>
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                @foreach ($section["fields"] as $field)
-                                    <div
-                                        class="{{ $field['is_textarea'] ? 'md:col-span-2' : '' }} rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
-                                    >
-                                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field["label"] }}</p>
-                                        <p class="mt-1.5 whitespace-pre-line text-sm font-medium text-[#0F172A]">{{ $field["value"] }}</p>
-                                    </div>
-                                @endforeach
+                                <span
+                                    class="text-xs font-bold text-primary"
+                                    >{{ $loop->iteration }}</span
+                                >
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-[#0F172A]">
+                                    {{
+                                        \Illuminate\Support\Str::title(
+                                            $section["title"],
+                                        )
+                                    }}
+                                </h2>
                             </div>
                         </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
-        @if ($lampiranCards->isNotEmpty())
-            <div
-                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
-            >
-                <div class="mb-5 flex items-center gap-3">
-                    <div
-                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F97316]"
-                    >
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-[#0F172A]">
-                            Lampiran Persyaratan Dokumen
-                        </h2>
-                        <p class="text-sm text-[#64748B]">Hanya dokumen yang benar-benar diunggah dalam pengajuan ini.</p>
-                    </div>
-                </div>
+                        <div class="space-y-5">
+                            @php
+                                $textItems = collect($section["items"])->where("type", "text")->values();
+                                $fileItems = collect($section["items"])->where("type", "file")->values();
+                            @endphp
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    @foreach ($lampiranCards as $card)
-                        <button
-                            type="button"
-                            onclick="openDocumentPreview(@js($card['label']), @js($card['preview_url']), @js($card['preview_type']), @js($card['download_url']), @js($card['filename']))"
-                            class="group flex min-h-[184px] w-full flex-col items-center justify-center rounded-[24px] border border-[#D8E2F1] bg-white px-5 py-6 text-center transition hover:border-primary/35 hover:shadow-[0_18px_40px_-28px_rgba(37,99,235,0.35)]"
-                        >
-                            @if ($card["is_image"])
-                                <div class="overflow-hidden rounded-[20px] border border-[#D8E2F1] bg-[#F8FAFC]">
-                                    <img src="{{ $card['preview_url'] }}" alt="{{ $card['label'] }}" class="h-28 w-28 object-cover transition duration-200 group-hover:scale-[1.02]" />
-                                </div>
-                            @else
+                            @if ($textItems->isNotEmpty())
                                 <div
-                                    class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#DBEAFE] text-primary transition group-hover:bg-[#BFDBFE]"
+                                    class="grid grid-cols-1 gap-4 md:grid-cols-2"
                                 >
-                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
+                                    @foreach ($textItems as $item)
+                                        <div
+                                            class="{{ $item['is_textarea'] ? 'md:col-span-2' : '' }} rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                                        >
+                                            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $item["label"] }}</p>
+                                            <p class="mt-1.5 whitespace-pre-line text-sm font-medium text-[#0F172A]">{{ $item["value"] }}</p>
+                                        </div>
+                                    @endforeach
                                 </div>
                             @endif
-                            <p class="mt-4 line-clamp-2 text-base font-bold text-[#0F172A]">{{ $card["label"] }}</p>
-                            <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $card["section"] }}</p>
-                            <span
-                                class="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600"
-                            >
-                                {{ $card["status"] }}
-                            </span>
-                        </button>
-                    @endforeach
-                </div>
+
+                            @if ($fileItems->isNotEmpty())
+                                <div
+                                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                                >
+                                    @foreach ($fileItems as $item)
+                                        <button
+                                            type="button"
+                                            onclick="openDocumentPreview(@js($item['label']), @js($item['preview_url']), @js($item['preview_type']), @js($item['download_url']), @js($item['filename']))"
+                                            class="group flex min-h-[184px] w-full flex-col items-center justify-center rounded-[24px] border border-[#D8E2F1] bg-white px-5 py-6 text-center transition hover:border-primary/35 hover:shadow-[0_18px_40px_-28px_rgba(37,99,235,0.35)]"
+                                        >
+                                            @if ($item["is_image"])
+                                                <div
+                                                    class="overflow-hidden rounded-[20px] border border-[#D8E2F1] bg-[#F8FAFC]"
+                                                >
+                                                    <img
+                                                        src="{{ $item['preview_url'] }}"
+                                                        alt="{{ $item['label'] }}"
+                                                        class="h-28 w-28 object-cover transition duration-200 group-hover:scale-[1.02]"
+                                                    />
+                                                </div>
+                                            @else
+                                                <div
+                                                    class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#DBEAFE] text-primary transition group-hover:bg-[#BFDBFE]"
+                                                >
+                                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                    </svg>
+                                                </div>
+                                            @endif
+                                            <p class="mt-4 line-clamp-2 text-base font-bold text-[#0F172A]">{{ $item["label"] }}</p>
+                                            <span
+                                                class="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600"
+                                            >
+                                                {{ $item["status"] }}
+                                            </span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </div>
         @endif
 
@@ -483,8 +445,3 @@
         }
     </script>
 @endsection
-
-
-
-
-

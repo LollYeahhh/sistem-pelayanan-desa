@@ -57,16 +57,14 @@ class PengajuanController extends Controller
             $formVersion->sections->flatMap(fn($section) => $section->fields),
             $permohonan->user,
         );
-        [$identityFieldsUsed, $additionalSections, $lampiranCards] = $this->buildDisplayGroups(
+        $displaySections = $this->buildDisplaySections(
             $permohonan,
             $fieldStates,
         );
 
         return view("admin.pengajuan.show", compact(
             "permohonan",
-            "identityFieldsUsed",
-            "additionalSections",
-            "lampiranCards",
+            "displaySections",
         ));
     }
 
@@ -152,15 +150,13 @@ class PengajuanController extends Controller
         return [$path, $mimeType];
     }
 
-    protected function buildDisplayGroups(PermohonanSurat $permohonan, array $fieldStates): array
+    protected function buildDisplaySections(PermohonanSurat $permohonan, array $fieldStates)
     {
         $dataLookup = $permohonan->data->keyBy("field_id");
-        $identityFieldsUsed = collect();
-        $additionalSections = collect();
-        $lampiranCards = collect();
+        $displaySections = collect();
 
         foreach ($permohonan->layanan->sections as $section) {
-            $sectionFields = collect();
+            $sectionItems = collect();
 
             foreach ($section->fields as $field) {
                 $fieldState = $fieldStates[$field->id] ?? [
@@ -186,15 +182,13 @@ class PengajuanController extends Controller
                         : in_array($extension, ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"]);
                     $isPdf = $mimeType === "application/pdf" || $extension === "pdf";
 
-                    $lampiranCards->push([
+                    $sectionItems->push([
+                        "type" => "file",
                         "label" => $field->label,
-                        "section" => $section->nama_section,
-                        "path" => $filePath,
                         "filename" => basename($filePath),
                         "status" => "Telah Diunggah",
                         "is_image" => $isImage,
                         "is_pdf" => $isPdf,
-                        "is_previewable" => $isImage || $isPdf,
                         "preview_type" => $isImage ? "image" : ($isPdf ? "pdf" : "file"),
                         "preview_url" => route("admin.pengajuan.lampiran.preview", [$permohonan, $field]),
                         "download_url" => route("admin.pengajuan.lampiran.download", [$permohonan, $field]),
@@ -209,9 +203,11 @@ class PengajuanController extends Controller
                         : $submittedValue;
 
                     if ($displayValue !== "") {
-                        $identityFieldsUsed->push([
+                        $sectionItems->push([
+                            "type" => "text",
                             "label" => $field->label,
                             "value" => $displayValue,
+                            "is_textarea" => false,
                         ]);
                     }
 
@@ -219,7 +215,8 @@ class PengajuanController extends Controller
                 }
 
                 if ($submittedValue !== "") {
-                    $sectionFields->push([
+                    $sectionItems->push([
+                        "type" => "text",
                         "label" => $field->label,
                         "value" => $submittedValue,
                         "is_textarea" => $field->tipe_input === "textarea",
@@ -227,15 +224,15 @@ class PengajuanController extends Controller
                 }
             }
 
-            if ($sectionFields->isNotEmpty()) {
-                $additionalSections->push([
+            if ($sectionItems->isNotEmpty()) {
+                $displaySections->push([
                     "title" => $section->nama_section,
-                    "fields" => $sectionFields,
+                    "items" => $sectionItems,
                 ]);
             }
         }
 
-        return [$identityFieldsUsed, $additionalSections, $lampiranCards];
+        return $displaySections;
     }
 }
 
