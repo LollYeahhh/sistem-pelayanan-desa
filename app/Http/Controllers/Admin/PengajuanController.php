@@ -108,7 +108,7 @@ class PengajuanController extends Controller
 
         $permohonan->update([
             "status" => "ditolak",
-            "catatan" => $request->alasan_tolak,
+            "alasan_penolakan" => $request->alasan_tolak,
             "reviewed_by" => auth()->id(),
             "reviewed_at" => now(),
         ]);

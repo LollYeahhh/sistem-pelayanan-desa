@@ -76,6 +76,33 @@
                 </div>
             @endif
         </div>
+
+        @if ($permohonan->status === 'ditolak' && $permohonan->rejection_reason)
+            <div class="mt-4 rounded-xl border border-red-100 bg-red-50 p-4">
+                <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-red-600">Alasan Penolakan</p>
+                <p class="text-sm text-red-700">{{ $permohonan->rejection_reason }}</p>
+            </div>
+        @endif
+
+        @if ($permohonan->status === 'ditolak')
+            <div class="mt-4">
+                @if ($permohonan->layanan?->is_active)
+                    <a
+                        href="{{ route('rt.ajukan.form', $permohonan->layanan) }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Ajukan Ulang
+                    </a>
+                @else
+                    <div class="inline-flex rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                        Layanan ini sedang tidak tersedia untuk diajukan ulang.
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
     <div class="mb-6 rounded-2xl border border-gray-100 bg-white p-6 lg:p-8">
         <h2 class="mb-5 text-base font-bold text-[#0F172A]">Data Permohonan</h2>

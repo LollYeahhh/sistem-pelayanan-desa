@@ -10,8 +10,8 @@ class PermohonanSurat extends Model
 
     protected $fillable = [
         'user_id', 'layanan_id', 'form_version_id', 'no_registrasi', 'status',
-        'catatan_pemohon', 'catatan_admin', 'reviewed_by',
-        'reviewed_at',
+        'catatan_pemohon', 'catatan_admin', 'alasan_penolakan', 'reviewed_by',
+        'reviewed_at', 'deadline',
     ];
 
     protected function casts(): array
@@ -61,5 +61,12 @@ class PermohonanSurat extends Model
             'selesai'   => ['label' => 'SELESAI', 'color' => 'bg-emerald-100 text-emerald-700'],
             default     => ['label' => strtoupper($this->status), 'color' => 'bg-gray-100 text-gray-700'],
         };
+    }
+
+    public function getRejectionReasonAttribute(): ?string
+    {
+        return $this->getAttribute('alasan_penolakan')
+            ?? $this->getAttribute('catatan_admin')
+            ?? $this->getAttribute('catatan');
     }
 }
