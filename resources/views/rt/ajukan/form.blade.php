@@ -1,6 +1,11 @@
 @extends ("layouts.rt")
 @section ("title", "Lengkapi Dokumen RT - " . $layanan->nama_layanan)
 
+@php
+    $fieldStates = $fieldStates ?? [];
+    $lockedFieldCount = collect($fieldStates)->where("is_locked", true)->count();
+@endphp
+
 @section ("content")
     <div class="space-y-8">
         <div class="flex items-center justify-center gap-0">
@@ -72,7 +77,11 @@
                             >
                         </div>
                         <h3 class="text-lg font-bold text-[#0F172A]">
-                            {{ $section->nama_section }}
+                            {{
+                                ucwords(
+                                    $section->nama_section,
+                                )
+                            }}
                         </h3>
                     </div>
 
@@ -80,125 +89,147 @@
                         @foreach ($section->fields as $field)
                             @php
                                 $fieldName = "field_" . $field->id;
+                                $fieldState = $fieldStates[$field->id] ?? [
+                                    "is_identity" => false,
+                                    "value" => null,
+                                    "is_locked" => false,
+                                ];
+                                $prefillValue = old($fieldName, $fieldState["value"]);
+                                $isLockedProfileField =
+                                    $field->tipe_input !== "file" && $fieldState["is_locked"];
                             @endphp
                             <div>
                                 <label
                                     for="{{ $fieldName }}"
                                     class="mb-2 block text-sm font-semibold text-[#0F172A]"
                                 >
-                                    {{ $field->label }}
+                                    {{
+                                        ucwords(
+                                            $field->label,
+                                        )
+                                    }}
                                     @if ($field->is_required)
                                         <span class="text-red-500">*</span>
                                     @endif
                                 </label>
 
-                                @switch ($field->tipe_input)
-                                    @case ('text')
-                                        <input
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            type="text"
-                                            value="{{ old($fieldName) }}"
-                                            placeholder="{{ $field->placeholder ?? 'Masukkan ' . strtolower($field->label) }}"
-                                            class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                        />
-                                        @break
-                                    @case ('number')
-                                        <input
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            type="number"
-                                            value="{{ old($fieldName) }}"
-                                            placeholder="{{ $field->placeholder ?? 'Masukkan angka' }}"
-                                            class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                        />
-                                        @break
-                                    @case ('date')
-                                        <input
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            type="date"
-                                            value="{{ old($fieldName) }}"
-                                            class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                        />
-                                        @break
-                                    @case ('select')
-                                        <select
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                        >
-                                            <option value="">
-                                                -- Pilih {{ $field->label }} --
-                                            </option>
-                                            @foreach ($field->opsi_select ?? [] as $opsi)
-                                                <option
-                                                    value="{{ $opsi }}"
-                                                    {{
-                                                        old($fieldName) === $opsi
-                                                                ? "selected"
-                                                                : ""
-                                                    }}
-                                                >
-                                                    {{ $opsi }}
+                                @if ($isLockedProfileField)
+                                    <div
+                                        class="flex h-[48px] w-full cursor-not-allowed items-center rounded-xl border border-[#D7E3F8] bg-[#F8FBFF] px-4 text-sm text-[#0F172A] opacity-70"
+                                    >
+                                        {{ $prefillValue }}
+                                    </div>
+                                    <input
+                                        type="hidden"
+                                        id="{{ $fieldName }}"
+                                        name="{{ $fieldName }}"
+                                        value="{{ $prefillValue }}"
+                                    />
+                                @else
+                                    @switch ($field->tipe_input)
+                                        @case ('text')
+                                            <input
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                type="text"
+                                                value="{{ $prefillValue }}"
+                                                placeholder="{{ $field->placeholder ?? 'Masukkan ' . strtolower($field->label) }}"
+                                                class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                            />
+                                            @break
+                                        @case ('number')
+                                            <input
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                type="number"
+                                                value="{{ $prefillValue }}"
+                                                placeholder="{{ $field->placeholder ?? 'Masukkan angka' }}"
+                                                class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                            />
+                                            @break
+                                        @case ('date')
+                                            <input
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                type="date"
+                                                value="{{ $prefillValue }}"
+                                                class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                            />
+                                            @break
+                                        @case ('select')
+                                            <select
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                            >
+                                                <option value="">
+                                                    -- Pilih {{ $field->label }} --
                                                 </option>
-                                            @endforeach
-                                        </select>
-                                        @break
-                                    @case ('textarea')
-                                        <textarea
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            rows="4"
-                                            placeholder="{{ $field->placeholder ?? 'Tuliskan ' . strtolower($field->label) }}"
-                                            class="w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                            >{{
-                                                old(
-                                                    $fieldName,
-                                                )
-                                            }}</textarea
-                                        >
-                                        @break
-                                    @case ('file')
-                                        <input
-                                            id="{{ $fieldName }}"
-                                            name="{{ $fieldName }}"
-                                            type="file"
-                                            accept=".jpg,.jpeg,.png,.pdf"
-                                            class="block w-full rounded-xl border border-dashed border-gray-200 bg-[#F8FAFC] px-4 py-3 text-sm text-[#64748B] transition file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary hover:border-primary/40"
-                                            {{
-                                                $field->is_required
-                                                    ? "required"
-                                                    : ""
-                                            }}
-                                        />
-                                        @break
-                                @endswitch
+                                                @foreach ($field->opsi_select ?? [] as $opsi)
+                                                    <option
+                                                        value="{{ $opsi }}"
+                                                        {{
+                                                            $prefillValue === $opsi
+                                                                    ? "selected"
+                                                                    : ""
+                                                        }}
+                                                    >
+                                                        {{ $opsi }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @break
+                                        @case ('textarea')
+                                            <textarea
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                rows="4"
+                                                placeholder="{{ $field->placeholder ?? 'Tuliskan ' . strtolower($field->label) }}"
+                                                class="w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder-[#94A3B8] transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                                >{{ $prefillValue }}</textarea
+                                            >
+                                            @break
+                                        @case ('file')
+                                            <input
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.pdf"
+                                                class="block w-full rounded-xl border border-dashed border-gray-200 bg-[#F8FAFC] px-4 py-3 text-sm text-[#64748B] transition file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary hover:border-primary/40"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                            />
+                                            @break
+                                    @endswitch
+                                @endif
 
                                 @error ($fieldName)
                                     <p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>

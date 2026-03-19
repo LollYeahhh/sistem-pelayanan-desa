@@ -2,6 +2,11 @@
 @section ("title", "Lengkapi Dokumen - " . $layanan->nama_layanan)
 @section ("page-title", "Ajukan Layanan")
 
+@php
+    $fieldStates = $fieldStates ?? [];
+    $lockedFieldCount = collect($fieldStates)->where("is_locked", true)->count();
+@endphp
+
 @section ("content")
     {{-- Stepper --}}
     <div class="flex items-center justify-center gap-0 mb-8">
@@ -75,158 +80,186 @@
                         >
                     </div>
                     <h3 class="text-lg font-bold text-[#0f172a]">
-                        {{ $section->nama_section }}
+                        {{
+                            ucwords(
+                                $section->nama_section,
+                            )
+                        }}
                     </h3>
                 </div>
 
                 {{-- Fields --}}
-                <div class="space-y-5">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-5">
                     @foreach ($section->fields as $field)
                         @php
                             $fieldName = "field_" . $field->id;
+                            $isFullWidth = in_array($field->tipe_input, ["textarea", "file"]);
+                            $fieldState = $fieldStates[$field->id] ?? [
+                                "is_identity" => false,
+                                "value" => null,
+                                "is_locked" => false,
+                            ];
+                            $prefillValue = old($fieldName, $fieldState["value"]);
+                            $isLockedProfileField =
+                                $field->tipe_input !== "file" && $fieldState["is_locked"];
                         @endphp
-                        <div>
+                        <div class="{{ $isFullWidth ? 'lg:col-span-2' : '' }}">
                             <label
                                 for="{{ $fieldName }}"
-                                class="block text-sm font-semibold text-[#0f172a] mb-2"
+                                class="block text-xs font-semibold text-[#64748b] uppercase tracking-wider mb-2"
                             >
-                                {{ $field->label }}
+                                {{
+                                    ucwords(
+                                        $field->label,
+                                    )
+                                }}
                                 @if ($field->is_required)
                                     <span class="text-red-500">*</span>
                                 @endif
                             </label>
 
-                            @switch ($field->tipe_input)
-                                @case ('text')
-                                    <input
-                                        type="text"
-                                        id="{{ $fieldName }}"
-                                        name="{{ $fieldName }}"
-                                        value="{{ old($fieldName) }}"
-                                        placeholder="{{ $field->placeholder ?? 'Masukkan ' . strtolower($field->label) }}"
-                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                        {{
-                                            $field->is_required
-                                                ? "required"
-                                                : ""
-                                        }}
-                                    />
-                                    @break
-                                @case ('number')
-                                    <input
-                                        type="number"
-                                        id="{{ $fieldName }}"
-                                        name="{{ $fieldName }}"
-                                        value="{{ old($fieldName) }}"
-                                        placeholder="{{ $field->placeholder ?? 'Masukkan angka' }}"
-                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                        {{
-                                            $field->is_required
-                                                ? "required"
-                                                : ""
-                                        }}
-                                    />
-                                    @break
-                                @case ('date')
-                                    <input
-                                        type="date"
-                                        id="{{ $fieldName }}"
-                                        name="{{ $fieldName }}"
-                                        value="{{ old($fieldName) }}"
-                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                        {{
-                                            $field->is_required
-                                                ? "required"
-                                                : ""
-                                        }}
-                                    />
-                                    @break
-                                @case ('select')
-                                    <select
-                                        id="{{ $fieldName }}"
-                                        name="{{ $fieldName }}"
-                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                        {{
-                                            $field->is_required
-                                                ? "required"
-                                                : ""
-                                        }}
-                                    >
-                                        <option value="">
-                                            -- Pilih {{ $field->label }} --
-                                        </option>
-                                        @if ($field->opsi_select)
-                                            @foreach ($field->opsi_select as $opsi)
-                                                <option
-                                                    value="{{ $opsi }}"
-                                                    {{
-                                                        old($fieldName) === $opsi
-                                                                ? "selected"
-                                                                : ""
-                                                    }}
-                                                    >{{ $opsi }}
-                                                </option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                    @break
-                                @case ('textarea')
-                                    <textarea
-                                        id="{{ $fieldName }}"
-                                        name="{{ $fieldName }}"
-                                        rows="4"
-                                        placeholder="{{ $field->placeholder ?? 'Tuliskan ' . strtolower($field->label) }}"
-                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
-                                        {{
-                                            $field->is_required
-                                                ? "required"
-                                                : ""
-                                        }}
-                                        >{{
-                                            old(
-                                                $fieldName,
-                                            )
-                                        }}</textarea
-                                    >
-                                    @break
-                                @case ('file')
-                                    <div class="relative">
-                                        <label
-                                            for="{{ $fieldName }}"
-                                            class="flex flex-col items-center justify-center w-full h-32 bg-[#f8fafc] border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition group"
-                                        >
-                                            <svg class="w-8 h-8 text-[#94a3b8] group-hover:text-primary transition mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                                            </svg>
-                                            <span
-                                                class="text-sm text-[#94a3b8] group-hover:text-primary font-medium transition"
-                                                >Klik untuk unggah {{ $field->label }}</span
-                                            >
-                                            <span
-                                                class="text-xs text-[#cbd5e1] mt-1"
-                                                >Maks. 2MB (JPG, PNG, PDF)</span
-                                            >
-                                        </label>
+                            @if ($isLockedProfileField)
+                                <div
+                                    class="flex h-[48px] w-full cursor-not-allowed items-center rounded-xl border border-[#D7E3F8] bg-[#F8FBFF] px-4 text-sm text-[#0f172a] opacity-70"
+                                >
+                                    {{ $prefillValue }}
+                                </div>
+                                <input
+                                    type="hidden"
+                                    id="{{ $fieldName }}"
+                                    name="{{ $fieldName }}"
+                                    value="{{ $prefillValue }}"
+                                />
+                            @else
+                                @switch ($field->tipe_input)
+                                    @case ('text')
                                         <input
-                                            type="file"
+                                            type="text"
                                             id="{{ $fieldName }}"
                                             name="{{ $fieldName }}"
-                                            accept=".jpg,.jpeg,.png,.pdf"
-                                            class="hidden"
+                                            value="{{ $prefillValue }}"
+                                            placeholder="{{ $field->placeholder ?? 'Masukkan ' . strtolower($field->label) }}"
+                                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                                             {{
                                                 $field->is_required
                                                     ? "required"
                                                     : ""
                                             }}
-                                            onchange="updateFileLabel(this)"
                                         />
-                                        <p
-                                            id="file_label_{{ $field->id }}"
-                                            class="text-xs text-primary font-medium mt-2 hidden"
-                                        ></p>
-                                    </div>
-                                    @break
-                            @endswitch
+                                        @break
+                                    @case ('number')
+                                        <input
+                                            type="number"
+                                            id="{{ $fieldName }}"
+                                            name="{{ $fieldName }}"
+                                            value="{{ $prefillValue }}"
+                                            placeholder="{{ $field->placeholder ?? 'Masukkan angka' }}"
+                                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                            {{
+                                                $field->is_required
+                                                    ? "required"
+                                                    : ""
+                                            }}
+                                        />
+                                        @break
+                                    @case ('date')
+                                        <input
+                                            type="date"
+                                            id="{{ $fieldName }}"
+                                            name="{{ $fieldName }}"
+                                            value="{{ $prefillValue }}"
+                                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                            {{
+                                                $field->is_required
+                                                    ? "required"
+                                                    : ""
+                                            }}
+                                        />
+                                        @break
+                                    @case ('select')
+                                        <select
+                                            id="{{ $fieldName }}"
+                                            name="{{ $fieldName }}"
+                                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                            {{
+                                                $field->is_required
+                                                    ? "required"
+                                                    : ""
+                                            }}
+                                        >
+                                            <option value="">
+                                                -- Pilih {{ $field->label }} --
+                                            </option>
+                                            @if ($field->opsi_select)
+                                                @foreach ($field->opsi_select as $opsi)
+                                                    <option
+                                                        value="{{ $opsi }}"
+                                                        {{
+                                                            $prefillValue === $opsi
+                                                                    ? "selected"
+                                                                    : ""
+                                                        }}
+                                                        >{{ $opsi }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                        @break
+                                    @case ('textarea')
+                                        <textarea
+                                            id="{{ $fieldName }}"
+                                            name="{{ $fieldName }}"
+                                            rows="4"
+                                            placeholder="{{ $field->placeholder ?? 'Tuliskan ' . strtolower($field->label) }}"
+                                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
+                                            {{
+                                                $field->is_required
+                                                    ? "required"
+                                                    : ""
+                                            }}
+                                            >{{ $prefillValue }}</textarea
+                                        >
+                                        @break
+                                    @case ('file')
+                                        <div class="relative">
+                                            <label
+                                                for="{{ $fieldName }}"
+                                                class="flex flex-col items-center justify-center w-full h-32 bg-[#f8fafc] border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition group"
+                                            >
+                                                <svg class="w-8 h-8 text-[#94a3b8] group-hover:text-primary transition mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                                </svg>
+                                                <span
+                                                    class="text-sm text-[#94a3b8] group-hover:text-primary font-medium transition"
+                                                    >Klik untuk unggah {{ $field->label }}</span
+                                                >
+                                                <span
+                                                    class="text-xs text-[#cbd5e1] mt-1"
+                                                    >Maks. 2MB (JPG, PNG,
+                                                    PDF)</span
+                                                >
+                                            </label>
+                                            <input
+                                                type="file"
+                                                id="{{ $fieldName }}"
+                                                name="{{ $fieldName }}"
+                                                accept=".jpg,.jpeg,.png,.pdf"
+                                                class="hidden"
+                                                {{
+                                                    $field->is_required
+                                                        ? "required"
+                                                        : ""
+                                                }}
+                                                onchange="updateFileLabel(this)"
+                                            />
+                                            <p
+                                                id="file_label_{{ $field->id }}"
+                                                class="text-xs text-primary font-medium mt-2 hidden"
+                                            ></p>
+                                        </div>
+                                        @break
+                                @endswitch
+                            @endif
 
                             @error ($fieldName)
                                 <p class="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -242,8 +275,28 @@
             </div>
         @endforeach
 
+        {{-- Declaration Checkbox --}}
+        <div
+            class="bg-[#E1EFFF] border border-[#3B82F6]/30 rounded-2xl px-5 py-4 mt-6 mb-4"
+        >
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                    type="checkbox"
+                    id="declarationCheckbox"
+                    class="w-[18px] h-[18px] rounded border-gray-300 text-[#1D4ED8] focus:ring-[#1D4ED8] mt-0.5 shrink-0"
+                    required
+                />
+                <span class="text-xs text-[#1D4ED8]">
+                    Saya menyatakan bahwa data yang saya isikan di atas adalah
+                    <strong class="underline text-[#1D4ED8]">
+                        benar dan dapat dipertanggungjawabkan secara hukum </strong
+                    >.
+                </span>
+            </label>
+        </div>
+
         {{-- Buttons --}}
-        <div class="flex items-center justify-between mt-6">
+        <div class="flex items-center justify-between mt-4">
             <a
                 href="{{ route('warga.ajukan.index') }}"
                 class="inline-flex items-center gap-2 text-sm font-semibold text-[#64748b] hover:text-[#0f172a] transition"
@@ -256,13 +309,12 @@
 
             <button
                 type="button"
+                id="btnLanjutkan"
                 onclick="showConfirmModal()"
-                class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-primary-hover transition shadow-md shadow-primary/30"
+                class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-8 py-3 rounded-xl transition shadow-md shadow-primary/30 opacity-50 cursor-not-allowed"
+                disabled
             >
-                Selanjutnya
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
+                Lanjutkan
             </button>
         </div>
     </form>
@@ -345,7 +397,47 @@
             }
         }
 
+        function checkFormCompleteness() {
+            const form = document.getElementById("ajukanForm");
+            const btn = document.getElementById("btnLanjutkan");
+
+            const requiredFields = form.querySelectorAll("[required]");
+            let allFilled = true;
+
+            requiredFields.forEach(function (field) {
+                if (field.type === "checkbox") {
+                    if (!field.checked) allFilled = false;
+                } else if (field.type === "file") {
+                    if (!field.files || field.files.length === 0)
+                        allFilled = false;
+                } else {
+                    if (!field.value || field.value.trim() === "")
+                        allFilled = false;
+                }
+            });
+
+            if (allFilled) {
+                btn.disabled = false;
+                btn.classList.remove("opacity-50", "cursor-not-allowed");
+                btn.classList.add("hover:bg-primary-hover");
+            } else {
+                btn.disabled = true;
+                btn.classList.add("opacity-50", "cursor-not-allowed");
+                btn.classList.remove("hover:bg-primary-hover");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("ajukanForm");
+            form.addEventListener("input", checkFormCompleteness);
+            form.addEventListener("change", checkFormCompleteness);
+            checkFormCompleteness();
+        });
+
         function showConfirmModal() {
+            const btn = document.getElementById("btnLanjutkan");
+            if (btn.disabled) return;
+
             const form = document.getElementById("ajukanForm");
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -363,5 +455,4 @@
             document.getElementById("ajukanForm").submit();
         }
     </script>
-
 @endsection

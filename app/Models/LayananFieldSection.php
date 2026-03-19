@@ -10,6 +10,7 @@ class LayananFieldSection extends Model
 
     protected $fillable = [
         'layanan_id',
+        'form_version_id',
         'nama_section',
         'urutan',
     ];
@@ -17,6 +18,11 @@ class LayananFieldSection extends Model
     public function layanan()
     {
         return $this->belongsTo(Layanan::class);
+    }
+
+    public function formVersion()
+    {
+        return $this->belongsTo(LayananFormVersion::class, 'form_version_id');
     }
 
     public function fields()

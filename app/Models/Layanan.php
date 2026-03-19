@@ -17,17 +17,51 @@ class Layanan extends Model
         ];
     }
 
-    /**
-     * Sections form builder
-     */
-    public function sections()
+    public function formVersions()
     {
-        return $this->hasMany(LayananFieldSection::class)->orderBy("urutan");
+        return $this->hasMany(LayananFormVersion::class, "layanan_id")->orderByDesc("version_number");
+    }
+
+    public function publishedFormVersion()
+    {
+        return $this->hasOne(LayananFormVersion::class, "layanan_id")
+            ->ofMany(["version_number" => "max"], function ($query) {
+                $query->where("status", "published");
+            });
+    }
+
+    public function draftFormVersion()
+    {
+        return $this->hasOne(LayananFormVersion::class, "layanan_id")
+            ->ofMany(["version_number" => "max"], function ($query) {
+                $query->where("status", "draft");
+            });
     }
 
     /**
-     * Hitung total field dari semua section
+     * Default sections relation points to the currently published form.
      */
+    public function sections()
+    {
+        return $this->hasMany(LayananFieldSection::class, "layanan_id")
+            ->whereHas("formVersion", function ($query) {
+                $query->where("status", "published");
+            })
+            ->orderBy("urutan");
+    }
+
+    public function fields()
+    {
+        return $this->hasManyThrough(
+            LayananField::class,
+            LayananFieldSection::class,
+            "layanan_id",
+            "section_id",
+            "id",
+            "id",
+        );
+    }
+
     public function getTotalFieldsAttribute(): int
     {
         return $this->sections->sum(fn($s) => $s->fields->count());

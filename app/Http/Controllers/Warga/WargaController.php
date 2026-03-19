@@ -4,20 +4,20 @@ namespace App\Http\Controllers\Warga;
 
 use App\Http\Controllers\Controller;
 use App\Models\Layanan;
-use App\Models\PermohonanSurat;
 use App\Models\PermohonanData;
 use App\Models\PermohonanLampiran;
+use App\Models\PermohonanSurat;
+use App\Support\LayananFormVersionManager;
+use App\Support\PengajuanIdentityMapper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class WargaController extends Controller
 {
-    /**
-     * Dashboard warga
-     */
     public function dashboard()
     {
         $user = Auth::user();
@@ -33,74 +33,73 @@ class WargaController extends Controller
             ->take(2)
             ->get();
 
-        return view(
-            "warga.dashboard",
-            compact("user", "layananPreview", "permohonan"),
-        );
+        return view("warga.dashboard", compact("user", "layananPreview", "permohonan"));
     }
 
-    /**
-     * Step 1 — Pilih Layanan
-     */
     public function ajukanIndex()
     {
         $layanan = Layanan::where("is_active", true)->get();
         return view("warga.ajukan.index", compact("layanan"));
     }
 
-    /**
-     * Step 2 — Form Pengisian
-     */
     public function ajukanForm(Layanan $layanan)
     {
-        $layanan->load(["sections.fields"]);
-        return view("warga.ajukan.form", compact("layanan"));
+        $publishedVersion = LayananFormVersionManager::ensurePublishedVersion($layanan);
+        $publishedVersion->load("sections.fields");
+        $layanan->setRelation("sections", $publishedVersion->sections);
+
+        $fieldStates = PengajuanIdentityMapper::buildFieldStates(
+            $layanan->sections->flatMap(fn($section) => $section->fields),
+            Auth::user(),
+        );
+
+        return view("warga.ajukan.form", compact("layanan", "fieldStates"));
     }
 
-    /**
-     * Store permohonan baru
-     */
     public function ajukanStore(Request $request, Layanan $layanan)
     {
-        $layanan->load(["sections.fields"]);
+        $publishedVersion = LayananFormVersionManager::ensurePublishedVersion($layanan);
+        $publishedVersion->load("sections.fields");
+        $layanan->setRelation("sections", $publishedVersion->sections);
+        $allFields = $layanan->sections->flatMap(fn($section) => $section->fields);
 
-        // Build validation rules dynamically
         $rules = [];
         $labels = [];
 
-        foreach ($layanan->sections as $section) {
-            foreach ($section->fields as $field) {
-                $key = "field_" . $field->id;
+        foreach ($allFields as $field) {
+            $key = "field_" . $field->id;
 
-                if ($field->tipe_input === "file") {
-                    $fieldRules = ["nullable", "file", "max:2048"];
-                    if ($field->is_required) {
-                        $fieldRules[0] = "required";
-                    }
-                } else {
-                    $fieldRules = $field->is_required
-                        ? ["required", "string"]
-                        : ["nullable", "string"];
+            if ($field->tipe_input === "file") {
+                $fieldRules = ["nullable", "file", "max:2048"];
+                if ($field->is_required) {
+                    $fieldRules[0] = "required";
                 }
-
-                $rules[$key] = $fieldRules;
-                $labels[$key] = $field->label;
+            } else {
+                $fieldRules = $field->is_required ? ["required", "string"] : ["nullable", "string"];
             }
+
+            $rules[$key] = $fieldRules;
+            $labels[$key] = $field->label;
         }
 
-        $validated = $request->validate($rules, [], $labels);
+        $payload = PengajuanIdentityMapper::mergeProfileValuesIntoPayload(
+            $allFields,
+            Auth::user(),
+            $request->all(),
+        );
 
-        DB::transaction(function () use ($request, $layanan, $validated) {
-            // Create permohonan
+        $validated = Validator::make($payload, $rules, [], $labels)->validate();
+
+        DB::transaction(function () use ($request, $layanan, $validated, $publishedVersion) {
             $noReg = "REG-" . strtoupper(Str::random(8));
             $permohonan = PermohonanSurat::create([
                 "user_id" => Auth::id(),
                 "layanan_id" => $layanan->id,
+                "form_version_id" => $publishedVersion->id,
                 "no_registrasi" => $noReg,
                 "status" => "menunggu",
             ]);
 
-            // Save field data
             foreach ($layanan->sections as $section) {
                 foreach ($section->fields as $field) {
                     $key = "field_" . $field->id;
@@ -108,10 +107,7 @@ class WargaController extends Controller
                     if ($field->tipe_input === "file") {
                         if ($request->hasFile($key)) {
                             $file = $request->file($key);
-                            $path = $file->store(
-                                "lampiran/" . $permohonan->id,
-                                "public",
-                            );
+                            $path = $file->store("lampiran/" . $permohonan->id, "public");
 
                             PermohonanLampiran::create([
                                 "permohonan_id" => $permohonan->id,
@@ -142,9 +138,6 @@ class WargaController extends Controller
             ->with("success", "Permohonan surat berhasil diajukan!");
     }
 
-    /**
-     * Riwayat & Status
-     */
     public function riwayat(Request $request)
     {
         $query = PermohonanSurat::where("user_id", Auth::id())
@@ -160,33 +153,23 @@ class WargaController extends Controller
         return view("warga.riwayat.index", compact("permohonan"));
     }
 
-    /**
-     * Detail permohonan
-     */
     public function riwayatShow(PermohonanSurat $permohonan)
     {
-        // Ensure user can only see their own
         if ($permohonan->user_id !== Auth::id()) {
             abort(403);
         }
 
-        $permohonan->load(["layanan", "data.field", "lampiran", "reviewer"]);
+        $permohonan->load(["layanan", "formVersion.sections.fields", "data.field", "lampiran", "reviewer"]);
 
         return view("warga.riwayat.show", compact("permohonan"));
     }
 
-    /**
-     * Profil
-     */
     public function profil()
     {
         $user = Auth::user();
         return view("warga.profil", compact("user"));
     }
 
-    /**
-     * Search for warga navbar.
-     */
     public function search(Request $request)
     {
         $q = trim($request->query("q", ""));
@@ -197,7 +180,6 @@ class WargaController extends Controller
 
         $results = collect();
 
-        // Search Layanan aktif
         Layanan::where("is_active", true)
             ->where("nama_layanan", "like", "%{$q}%")
             ->take(5)
@@ -211,16 +193,12 @@ class WargaController extends Controller
                 ]);
             });
 
-        // Search own Riwayat Permohonan
         PermohonanSurat::with("layanan")
             ->where("user_id", Auth::id())
             ->where(function ($query) use ($q) {
                 $query
                     ->where("no_registrasi", "like", "%{$q}%")
-                    ->orWhereHas(
-                        "layanan",
-                        fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"),
-                    );
+                    ->orWhereHas("layanan", fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"));
             })
             ->take(5)
             ->get()
@@ -228,10 +206,7 @@ class WargaController extends Controller
                 $results->push([
                     "type" => "Riwayat",
                     "title" => $p->no_registrasi ?: "Permohonan #" . $p->id,
-                    "sub" =>
-                        ($p->layanan->nama_layanan ?? "-") .
-                        " — " .
-                        ucfirst($p->status),
+                    "sub" => ($p->layanan->nama_layanan ?? "-") . " — " . ucfirst($p->status),
                     "url" => route("warga.riwayat.show", $p->id),
                 ]);
             });
@@ -239,9 +214,6 @@ class WargaController extends Controller
         return response()->json($results->take(10)->values());
     }
 
-    /**
-     * Update profil
-     */
     public function profilUpdate(Request $request)
     {
         $user = Auth::user();

@@ -8,9 +8,12 @@ use App\Models\MonografiCategory;
 use App\Models\PermohonanData;
 use App\Models\PermohonanLampiran;
 use App\Models\PermohonanSurat;
+use App\Support\LayananFormVersionManager;
+use App\Support\PengajuanIdentityMapper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -31,10 +34,7 @@ class RTController extends Controller
             ->take(2)
             ->get();
 
-        return view(
-            "rt.dashboard",
-            compact("user", "layananPreview", "permohonan"),
-        );
+        return view("rt.dashboard", compact("user", "layananPreview", "permohonan"));
     }
 
     public function ajukanIndex()
@@ -46,45 +46,58 @@ class RTController extends Controller
 
     public function ajukanForm(Layanan $layanan)
     {
-        $layanan->load(["sections.fields"]);
+        $publishedVersion = LayananFormVersionManager::ensurePublishedVersion($layanan);
+        $publishedVersion->load("sections.fields");
+        $layanan->setRelation("sections", $publishedVersion->sections);
 
-        return view("rt.ajukan.form", compact("layanan"));
+        $fieldStates = PengajuanIdentityMapper::buildFieldStates(
+            $layanan->sections->flatMap(fn($section) => $section->fields),
+            Auth::user(),
+        );
+
+        return view("rt.ajukan.form", compact("layanan", "fieldStates"));
     }
 
     public function ajukanStore(Request $request, Layanan $layanan)
     {
-        $layanan->load(["sections.fields"]);
+        $publishedVersion = LayananFormVersionManager::ensurePublishedVersion($layanan);
+        $publishedVersion->load("sections.fields");
+        $layanan->setRelation("sections", $publishedVersion->sections);
+        $allFields = $layanan->sections->flatMap(fn($section) => $section->fields);
 
         $rules = [];
         $labels = [];
 
-        foreach ($layanan->sections as $section) {
-            foreach ($section->fields as $field) {
-                $key = "field_" . $field->id;
+        foreach ($allFields as $field) {
+            $key = "field_" . $field->id;
 
-                if ($field->tipe_input === "file") {
-                    $fieldRules = ["nullable", "file", "max:2048"];
+            if ($field->tipe_input === "file") {
+                $fieldRules = ["nullable", "file", "max:2048"];
 
-                    if ($field->is_required) {
-                        $fieldRules[0] = "required";
-                    }
-                } else {
-                    $fieldRules = $field->is_required
-                        ? ["required", "string"]
-                        : ["nullable", "string"];
+                if ($field->is_required) {
+                    $fieldRules[0] = "required";
                 }
-
-                $rules[$key] = $fieldRules;
-                $labels[$key] = $field->label;
+            } else {
+                $fieldRules = $field->is_required ? ["required", "string"] : ["nullable", "string"];
             }
+
+            $rules[$key] = $fieldRules;
+            $labels[$key] = $field->label;
         }
 
-        $validated = $request->validate($rules, [], $labels);
+        $payload = PengajuanIdentityMapper::mergeProfileValuesIntoPayload(
+            $allFields,
+            Auth::user(),
+            $request->all(),
+        );
 
-        DB::transaction(function () use ($request, $layanan, $validated) {
+        $validated = Validator::make($payload, $rules, [], $labels)->validate();
+
+        DB::transaction(function () use ($request, $layanan, $validated, $publishedVersion) {
             $permohonan = PermohonanSurat::create([
                 "user_id" => Auth::id(),
                 "layanan_id" => $layanan->id,
+                "form_version_id" => $publishedVersion->id,
                 "no_registrasi" => "REG-" . strtoupper(Str::random(8)),
                 "status" => "menunggu",
             ]);
@@ -96,10 +109,7 @@ class RTController extends Controller
                     if ($field->tipe_input === "file") {
                         if ($request->hasFile($key)) {
                             $file = $request->file($key);
-                            $path = $file->store(
-                                "lampiran/" . $permohonan->id,
-                                "public",
-                            );
+                            $path = $file->store("lampiran/" . $permohonan->id, "public");
 
                             PermohonanLampiran::create([
                                 "permohonan_id" => $permohonan->id,
@@ -151,7 +161,7 @@ class RTController extends Controller
             abort(403);
         }
 
-        $permohonan->load(["layanan", "data.field", "lampiran", "reviewer"]);
+        $permohonan->load(["layanan", "formVersion.sections.fields", "data.field", "lampiran", "reviewer"]);
 
         return view("rt.riwayat.show", compact("permohonan"));
     }
@@ -163,9 +173,6 @@ class RTController extends Controller
         return view("rt.profil", compact("user"));
     }
 
-    /**
-     * Search for RT navbar.
-     */
     public function search(Request $request)
     {
         $q = trim($request->query("q", ""));
@@ -176,7 +183,6 @@ class RTController extends Controller
 
         $results = collect();
 
-        // Search Layanan aktif
         Layanan::where("is_active", true)
             ->where("nama_layanan", "like", "%{$q}%")
             ->take(5)
@@ -190,16 +196,12 @@ class RTController extends Controller
                 ]);
             });
 
-        // Search own Riwayat Permohonan
         PermohonanSurat::with("layanan")
             ->where("user_id", Auth::id())
             ->where(function ($query) use ($q) {
                 $query
                     ->where("no_registrasi", "like", "%{$q}%")
-                    ->orWhereHas(
-                        "layanan",
-                        fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"),
-                    );
+                    ->orWhereHas("layanan", fn($lq) => $lq->where("nama_layanan", "like", "%{$q}%"));
             })
             ->take(5)
             ->get()
@@ -207,10 +209,7 @@ class RTController extends Controller
                 $results->push([
                     "type" => "Riwayat",
                     "title" => $p->no_registrasi ?: "Permohonan #" . $p->id,
-                    "sub" =>
-                        ($p->layanan->nama_layanan ?? "-") .
-                        " — " .
-                        ucfirst($p->status),
+                    "sub" => ($p->layanan->nama_layanan ?? "-") . " — " . ucfirst($p->status),
                     "url" => route("rt.riwayat.show", $p->id),
                 ]);
             });

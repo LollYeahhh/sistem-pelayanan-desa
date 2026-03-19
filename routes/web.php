@@ -87,6 +87,10 @@ Route::middleware(["auth", "role:admin"])
             AdminFormBuilderController::class,
             "show",
         ])->name("layanan.form-builder");
+        Route::patch("/layanan/{layanan}/publish", [
+            AdminFormBuilderController::class,
+            "publish",
+        ])->name("layanan.publish");
         Route::post("/layanan/{layanan}/sections", [
             AdminFormBuilderController::class,
             "storeSection",
@@ -142,6 +146,14 @@ Route::middleware(["auth", "role:admin"])
             AdminPengajuanController::class,
             "show",
         ])->name("pengajuan.show");
+        Route::get("/pengajuan/{permohonan}/lampiran/{field}/preview", [
+            AdminPengajuanController::class,
+            "previewLampiran",
+        ])->name("pengajuan.lampiran.preview");
+        Route::get("/pengajuan/{permohonan}/lampiran/{field}/download", [
+            AdminPengajuanController::class,
+            "downloadLampiran",
+        ])->name("pengajuan.lampiran.download");
         Route::patch("/pengajuan/{permohonan}/approve", [
             AdminPengajuanController::class,
             "approve",
@@ -317,3 +329,5 @@ Route::middleware(["auth", "role:warga"])
             "profilUpdate",
         ])->name("profil.update");
     });
+
+

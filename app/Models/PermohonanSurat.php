@@ -9,7 +9,7 @@ class PermohonanSurat extends Model
     protected $table = 'permohonan_surat';
 
     protected $fillable = [
-        'user_id', 'layanan_id', 'no_registrasi', 'status',
+        'user_id', 'layanan_id', 'form_version_id', 'no_registrasi', 'status',
         'catatan_pemohon', 'catatan_admin', 'reviewed_by',
         'reviewed_at',
     ];
@@ -29,6 +29,11 @@ class PermohonanSurat extends Model
     public function layanan()
     {
         return $this->belongsTo(Layanan::class);
+    }
+
+    public function formVersion()
+    {
+        return $this->belongsTo(LayananFormVersion::class, 'form_version_id');
     }
 
     public function reviewer()

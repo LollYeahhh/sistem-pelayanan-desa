@@ -1,141 +1,588 @@
-@extends('layouts.admin')
-@section('title', 'Tinjau Pengajuan')
-@section('content')
+@extends ("layouts.admin")
+@section ("title", "Tinjau Pengajuan")
 
-<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-    <div class="flex items-start gap-3">
-        <a href="{{ route('admin.pengajuan.index') }}" class="mt-1 w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition shrink-0">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-        </a>
-        <div>
-            <h1 class="text-xl lg:text-[24px] font-extrabold text-dark">Tinjau Pengajuan</h1>
-            <p class="text-sm text-gray mt-1">Periksa kelengkapan data dan dokumen sebelum diproses</p>
-        </div>
-    </div>
+@section ("content")
     @php
         $statusColors = [
-            'menunggu' => 'bg-amber-50 text-amber-600 border-amber-200',
-            'diproses' => 'bg-blue-50 text-blue-600 border-blue-200',
-            'disetujui' => 'bg-green-50 text-green-600 border-green-200',
-            'ditolak' => 'bg-red-50 text-red-500 border-red-200',
+            "menunggu" => "border-amber-200 bg-amber-50 text-amber-600",
+            "diproses" => "border-blue-200 bg-blue-50 text-blue-600",
+            "disetujui" => "border-emerald-200 bg-emerald-50 text-emerald-600",
+            "ditolak" => "border-red-200 bg-red-50 text-red-500",
         ];
+
+        $dataLookup = $permohonan->data->keyBy("field_id");
+        $additionalSections = collect();
+        $lampiranCards = collect();
+
+        foreach ($permohonan->layanan->sections as $section) {
+            $visibleFields = $section->fields
+                ->where("tipe_input", "!=", "file")
+                ->filter(function ($field) use ($dataLookup, $fieldStates) {
+                    $datum = $dataLookup->get($field->id);
+                    $value = trim((string) ($datum->value ?? ""));
+
+                    if ($value === "") {
+                        return false;
+                    }
+
+                    return !($fieldStates[$field->id]["is_locked"] ?? false);
+                })
+                ->values();
+
+            if ($visibleFields->isNotEmpty()) {
+                $additionalSections->push([
+                    "title" => $section->nama_section,
+                    "fields" => $visibleFields,
+                ]);
+            }
+
+            foreach ($section->fields->where("tipe_input", "file") as $field) {
+                $lampiran = $permohonan->lampiran->firstWhere(
+                    "nama_dokumen",
+                    $field->label,
+                );
+                $datum = $dataLookup->get($field->id);
+                $filePath = $lampiran?->file_path ?? ($datum->value ?? null);
+                $mimeType = $lampiran?->file_type;
+                $extension = $filePath
+                    ? strtolower(pathinfo($filePath, PATHINFO_EXTENSION))
+                    : null;
+                $isImage = $mimeType
+                    ? str_starts_with($mimeType, "image/")
+                    : in_array($extension, [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "gif",
+                        "webp",
+                        "bmp",
+                        "svg",
+                    ]);
+                $isPdf = $mimeType === "application/pdf" || $extension === "pdf";
+                $isPreviewable = $isImage || $isPdf;
+
+                $previewUrl = $filePath
+                    ? route("admin.pengajuan.lampiran.preview", [$permohonan, $field])
+                    : null;
+                $downloadUrl = $filePath
+                    ? route("admin.pengajuan.lampiran.download", [$permohonan, $field])
+                    : null;
+
+                $lampiranCards->push([
+                    "label" => $field->label,
+                    "section" => $section->nama_section,
+                    "path" => $filePath,
+                    "filename" => $filePath ? basename($filePath) : null,
+                    "status" => $filePath ? "Telah Diunggah" : "Belum Diunggah",
+                    "is_image" => $isImage,
+                    "is_pdf" => $isPdf,
+                    "is_previewable" => $isPreviewable,
+                    "preview_type" => $isImage ? "image" : ($isPdf ? "pdf" : "file"),
+                    "preview_url" => $previewUrl,
+                    "download_url" => $downloadUrl,
+                ]);
+            }
+        }
     @endphp
-    <span class="inline-block text-xs font-bold px-4 py-2 rounded-full border {{ $statusColors[$permohonan->status] ?? '' }}">
-        {{ ucfirst($permohonan->status) }}
-    </span>
-</div>
-
-@if(session('success'))
-<div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ session('success') }}</div>
-@endif
-
-<div class="bg-white rounded-2xl border border-gray-light overflow-hidden">
-
-    {{-- Identitas Pemohon --}}
-    <div class="p-6 border-b border-gray-100">
-        <div class="flex items-center gap-2 mb-5">
-            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" /></svg>
-            <h3 class="text-base font-bold text-dark">Identitas Pemohon</h3>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            @php
-                $identitas = [
-                    'Nama Lengkap' => $permohonan->user->nama_lengkap ?? '-',
-                    'NIK' => $permohonan->user->nik ?? '-',
-                    'Tempat Lahir' => $permohonan->user->tempat_lahir ?? '-',
-                    'Tanggal Lahir' => isset($permohonan->user->tanggal_lahir) ? date('d/m/Y', strtotime($permohonan->user->tanggal_lahir)) : '-',
-                    'Jenis Kelamin' => $permohonan->user->jenis_kelamin ?? '-',
-                    'Status Perkawinan' => $permohonan->user->status_perkawinan ?? '-',
-                    'Agama' => $permohonan->user->agama ?? '-',
-                    'Pekerjaan' => $permohonan->user->pekerjaan ?? '-',
-                ];
-            @endphp
-            @foreach($identitas as $label => $value)
-            <div>
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{{ $label }}</p>
-                <div class="bg-[#F8FAFC] border-b border-gray-200 rounded-t-lg px-4 py-2.5">
-                    <p class="text-sm text-dark">{{ $value }}</p>
+    <div class="space-y-6">
+        <div
+            class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"
+        >
+            <div class="flex items-start gap-3">
+                <a
+                    href="{{ route('admin.pengajuan.index') }}"
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#D8E2F1] bg-white text-[#64748B] transition hover:border-primary/30 hover:text-primary"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </a>
+                <div>
+                    <h1
+                        class="text-2xl font-extrabold text-[#0F172A] lg:text-[30px]"
+                    >
+                        Tinjau Pengajuan
+                    </h1>
+                    <p class="mt-1 text-sm text-[#64748B]">Diajukan {{ $permohonan->created_at->translatedFormat("d M Y, H:i") }} WIB oleh {{ $permohonan->user->nama_lengkap ?? "-" }}.</p>
                 </div>
             </div>
-            @endforeach
+            <span
+                class="inline-flex shrink-0 items-center self-start rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] {{ $statusColors[$permohonan->status] ?? 'border-slate-200 bg-slate-50 text-slate-600' }}"
+            >
+                {{
+                    ucfirst(
+                        $permohonan->status,
+                    )
+                }}
+            </span>
         </div>
-    </div>
 
-    {{-- Info Layanan --}}
-    <div class="p-6 border-b border-gray-100">
-        <div class="flex items-center gap-2 mb-5">
-            <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
-            <h3 class="text-base font-bold text-dark">Detail Pengajuan</h3>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-            <div>
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Jenis Layanan</p>
-                <div class="bg-[#F8FAFC] border-b border-gray-200 rounded-t-lg px-4 py-2.5">
-                    <p class="text-sm text-dark">{{ $permohonan->layanan->nama_layanan ?? '-' }}</p>
+        @if (session("success"))
+            <div
+                class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700"
+            >
+                {{
+                    session(
+                        "success",
+                    )
+                }}
+            </div>
+        @endif
+
+        <div
+            class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+        >
+            <div class="mb-5 flex items-center gap-3">
+                <div
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DBEAFE] text-primary"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-[#0F172A]">
+                        Identitas Pemohon
+                    </h2>
+                    <p class="text-sm text-[#64748B]">Data ini dibaca dari profil pengguna yang terhubung dengan pengajuan.</p>
                 </div>
             </div>
-            <div>
-                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tanggal Pengajuan</p>
-                <div class="bg-[#F8FAFC] border-b border-gray-200 rounded-t-lg px-4 py-2.5">
-                    <p class="text-sm text-dark">{{ $permohonan->created_at->format('d M Y, H:i') }}</p>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                @foreach ($identitySummary as $label => $value)
+                    <div
+                        class="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                    >
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $label }}</p>
+                        <p class="mt-1.5 text-sm font-medium text-[#0F172A]">{{ $value }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        @if ($additionalSections->isNotEmpty())
+            <div
+                class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+            >
+                <div class="mb-5 flex items-center gap-3">
+                    <div
+                        class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E0F2FE] text-[#0284C7]"
+                    >
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7.5 4.5h9A2.25 2.25 0 0118.75 6.75v10.5A2.25 2.25 0 0116.5 19.5h-9A2.25 2.25 0 015.25 17.25V6.75A2.25 2.25 0 017.5 4.5z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-[#0F172A]">
+                            Data Formulir Tambahan
+                        </h2>
+                        <p class="text-sm text-[#64748B]">Field berikut memang diisi khusus saat pengajuan dan tidak berasal dari profil.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    @foreach ($additionalSections as $section)
+                        <div>
+                            <h3
+                                class="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#64748B]"
+                            >
+                                {{ $section["title"] }}
+                            </h3>
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                @foreach ($section["fields"] as $field)
+                                    @php
+                                        $value = $dataLookup->get($field->id)?->value;
+                                    @endphp
+                                    <div
+                                        class="{{ $field->tipe_input === 'textarea' ? 'md:col-span-2' : '' }} rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-3.5"
+                                    >
+                                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $field->label }}</p>
+                                        <p class="mt-1.5 whitespace-pre-line text-sm font-medium text-[#0F172A]">{{
+                                            filled($value)
+                                                ? $value
+                                                : "-"
+                                        }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-        </div>
-    </div>
+        @endif
 
-    {{-- Catatan (jika ditolak) --}}
-    @if($permohonan->status === 'ditolak' && $permohonan->catatan)
-    <div class="p-6 border-b border-gray-100">
-        <div class="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p class="text-sm font-bold text-red-600 mb-1">Alasan Penolakan:</p>
-            <p class="text-sm text-red-500">{{ $permohonan->catatan }}</p>
-        </div>
-    </div>
-    @endif
-
-    {{-- Action Buttons --}}
-    @if($permohonan->status === 'menunggu' || $permohonan->status === 'diproses')
-    <div class="p-6 flex items-center justify-end gap-3">
-        <button onclick="openModal('rejectModal')" class="px-6 py-3 border border-red-200 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition">Tolak Dokumen</button>
-        <form method="POST" action="{{ route('admin.pengajuan.approve', $permohonan) }}">
-            @csrf @method('PATCH')
-            <button type="submit" class="px-6 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover transition">Dokumen Valid</button>
-        </form>
-    </div>
-    @endif
-</div>
-
-{{-- Modal Tolak --}}
-<div id="rejectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/40" onclick="closeModal('rejectModal')"></div>
-    <div class="relative bg-white rounded-2xl w-full max-w-[500px] shadow-xl p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-bold text-dark">Tolak Pengajuan</h2>
-            <button onclick="closeModal('rejectModal')" class="text-gray-400 hover:text-gray-600">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-        </div>
-        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 flex gap-3">
-            <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-            <p class="text-sm text-blue-700">Berikan alasan penolakan agar pemohon dapat memperbaiki dokumen.</p>
-        </div>
-        <form method="POST" action="{{ route('admin.pengajuan.reject', $permohonan) }}">
-            @csrf @method('PATCH')
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Alasan penolakan</label>
-                <textarea name="alasan_tolak" rows="5" required placeholder="Contoh: Foto KTP tidak terbaca dengan jelas, silahkan unggah ulang"
-                          class="w-full bg-[#F8FAFC] border border-[#F3F3F3] rounded-xl px-4 py-3 text-sm placeholder-gray-400 resize-none focus:ring-primary focus:border-primary"></textarea>
+        <div
+            class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+        >
+            <div class="mb-5 flex items-center gap-3">
+                <div
+                    class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F97316]"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-[#0F172A]">
+                        Lampiran Persyaratan Dokumen
+                    </h2>
+                    <p class="text-sm text-[#64748B]">Klik dokumen yang sudah diunggah untuk melihat pratinjau dan mengunduh berkas.</p>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeModal('rejectModal')" class="flex-1 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Batal</button>
-                <button type="submit" class="flex-1 py-3 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600">Tolak Permohonan</button>
-            </div>
-        </form>
-    </div>
-</div>
 
-<script>
-function openModal(id){document.getElementById(id).classList.remove('hidden');document.body.style.overflow='hidden';}
-function closeModal(id){document.getElementById(id).classList.add('hidden');document.body.style.overflow='';}
-</script>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                @foreach ($lampiranCards as $card)
+                    @if ($card["path"])
+                        <button
+                            type="button"
+                            onclick="openDocumentPreview(@js($card['label']), @js($card['preview_url']), @js($card['preview_type']), @js($card['download_url']), @js($card['filename']))"
+                            class="group flex min-h-[184px] w-full flex-col items-center justify-center rounded-[24px] border border-[#D8E2F1] bg-white px-5 py-6 text-center transition hover:border-primary/35 hover:shadow-[0_18px_40px_-28px_rgba(37,99,235,0.35)]"
+                        >
+                            @if ($card["is_image"])
+                                <div class="overflow-hidden rounded-[20px] border border-[#D8E2F1] bg-[#F8FAFC]">
+                                    <img src="{{ $card['preview_url'] }}" alt="{{ $card['label'] }}" class="h-28 w-28 object-cover transition duration-200 group-hover:scale-[1.02]" />
+                                </div>
+                            @else
+                                <div
+                                    class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#DBEAFE] text-primary transition group-hover:bg-[#BFDBFE]"
+                                >
+                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                </div>
+                            @endif
+                            <p class="mt-4 line-clamp-2 text-base font-bold text-[#0F172A]">{{ $card["label"] }}</p>
+                            <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $card["section"] }}</p>
+                            <span
+                                class="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600"
+                            >
+                                {{ $card["status"] }}
+                            </span>
+                        </button>
+                    @else
+                        <div
+                            class="flex min-h-[184px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#D8E2F1] bg-[#F8FAFC] px-5 py-6 text-center opacity-70"
+                        >
+                            <div
+                                class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-slate-200 text-slate-500"
+                            >
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                            </div>
+                            <p class="mt-4 line-clamp-2 text-base font-bold text-[#0F172A]">{{ $card["label"] }}</p>
+                            <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#94A3B8]">{{ $card["section"] }}</p>
+                            <span
+                                class="mt-4 inline-flex rounded-full bg-slate-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600"
+                            >
+                                {{ $card["status"] }}
+                            </span>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
+        @if ($permohonan->status === "ditolak" && $permohonan->catatan)
+            <div
+                class="rounded-[28px] border border-red-200 bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+            >
+                <div
+                    class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4"
+                >
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-500">Alasan Penolakan</p>
+                    <p class="mt-2 text-sm font-medium text-red-600">{{ $permohonan->catatan }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if ($permohonan->status === "menunggu" || $permohonan->status === "diproses")
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                    type="button"
+                    onclick="openRejectModal()"
+                    class="inline-flex items-center justify-center rounded-2xl border border-red-200 bg-white px-6 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50"
+                >
+                    Tolak Dokumen
+                </button>
+                <form
+                    method="POST"
+                    action="{{ route('admin.pengajuan.approve', $permohonan) }}"
+                >
+                    @csrf
+                    @method ("PATCH")
+                    <button
+                        type="submit"
+                        class="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-20px_rgba(37,99,235,0.55)] transition hover:bg-primary-hover sm:w-auto"
+                    >
+                        Dokumen Valid
+                    </button>
+                </form>
+            </div>
+        @endif
+    </div>
+    <div
+        id="rejectModal"
+        class="fixed inset-0 z-[70] hidden items-center justify-center p-4"
+    >
+        <div
+            class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+            onclick="closeRejectModal()"
+        ></div>
+        <div
+            class="relative w-full max-w-lg rounded-[28px] border border-[#D8E2F1] bg-white p-6 shadow-2xl sm:p-7"
+        >
+            <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-[#0F172A]">
+                        Tolak Pengajuan
+                    </h2>
+                    <p class="mt-1 text-sm text-[#64748B]">Tuliskan alasan penolakan agar pemohon dapat memperbaiki dokumen dengan tepat.</p>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeRejectModal()"
+                    class="rounded-full p-2 text-[#94A3B8] transition hover:bg-slate-100 hover:text-[#334155]"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div
+                class="mb-5 rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3 text-sm text-[#1D4ED8]"
+            >
+                Pastikan alasan penolakan spesifik. Contoh: foto KTP tidak
+                terbaca, nomor dokumen tidak sesuai, atau lampiran belum
+                lengkap.
+            </div>
+
+            <form
+                method="POST"
+                action="{{ route('admin.pengajuan.reject', $permohonan) }}"
+                class="space-y-4"
+            >
+                @csrf
+                @method ("PATCH")
+                <div>
+                    <label
+                        for="alasan_tolak"
+                        class="mb-2 block text-sm font-semibold text-[#0F172A]"
+                        >Alasan Penolakan</label
+                    >
+                    <textarea
+                        id="alasan_tolak"
+                        name="alasan_tolak"
+                        rows="5"
+                        required
+                        placeholder="Contoh: Foto KTP tidak terbaca dengan jelas, silakan unggah ulang dokumen dengan pencahayaan yang lebih baik."
+                        class="w-full rounded-2xl border border-[#D8E2F1] bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder-[#94A3B8] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                        >{{
+                            old(
+                                "alasan_tolak",
+                            )
+                        }}</textarea
+                    >
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                    <button
+                        type="button"
+                        onclick="closeRejectModal()"
+                        class="inline-flex items-center justify-center rounded-2xl border border-[#D8E2F1] bg-white px-5 py-3 text-sm font-semibold text-[#475569] transition hover:bg-slate-50"
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center justify-center rounded-2xl bg-red-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+                    >
+                        Tolak Permohonan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div
+        id="documentPreviewModal"
+        class="fixed inset-0 z-[75] hidden items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+    >
+        <button
+            type="button"
+            class="absolute inset-0"
+            aria-label="Tutup pratinjau"
+            onclick="closeDocumentPreview()"
+        ></button>
+        <div
+            class="relative w-full max-w-5xl rounded-[28px] border border-slate-700 bg-white p-4 sm:p-5"
+        >
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <h2
+                        id="documentPreviewTitle"
+                        class="text-lg font-bold text-[#0F172A]"
+                    >
+                        Pratinjau Lampiran
+                    </h2>
+                    <p id="documentPreviewFilename" class="mt-1 text-sm text-[#64748B]"></p>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeDocumentPreview()"
+                    class="rounded-full p-2 text-[#94A3B8] transition hover:bg-slate-100 hover:text-[#334155]"
+                >
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div
+                class="overflow-hidden rounded-3xl border border-[#D8E2F1] bg-[#F8FAFC]"
+            >
+                <img
+                    id="documentPreviewImage"
+                    src=""
+                    alt="Pratinjau lampiran"
+                    class="hidden max-h-[72vh] w-full object-contain"
+                />
+                <iframe
+                    id="documentPreviewFrame"
+                    src="about:blank"
+                    class="hidden h-[72vh] w-full bg-white"
+                ></iframe>
+                <div
+                    id="documentPreviewFileState"
+                    class="hidden min-h-[380px] flex-col items-center justify-center gap-4 px-6 py-10 text-center"
+                >
+                    <div
+                        class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[#DBEAFE] text-primary"
+                    >
+                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-lg font-bold text-[#0F172A]">Dokumen tidak mendukung pratinjau langsung</p>
+                        <p class="mt-2 text-sm text-[#64748B]">Buka file di tab baru atau unduh dokumen untuk melihat isi lengkapnya.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <a
+                    id="documentPreviewOpenLink"
+                    href="#"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#D8E2F1] bg-white px-5 py-3 text-sm font-semibold text-[#334155] transition hover:border-primary/30 hover:text-primary"
+                >
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M6 10.5v7.125A1.875 1.875 0 007.875 19.5H15" />
+                    </svg>
+                    Buka File
+                </a>
+                <a
+                    id="documentPreviewDownloadLink"
+                    href="#"
+                    class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
+                >
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15" />
+                    </svg>
+                    Unduh
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openRejectModal() {
+            const modal = document.getElementById("rejectModal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeRejectModal() {
+            const modal = document.getElementById("rejectModal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            document.body.style.overflow = "";
+        }
+
+        function setPreviewActionState(element, url) {
+            if (!url) {
+                element.setAttribute("href", "#");
+                element.classList.add("pointer-events-none", "opacity-50");
+                return;
+            }
+
+            element.setAttribute("href", url);
+            element.classList.remove("pointer-events-none", "opacity-50");
+        }
+
+        function openDocumentPreview(title, url, type, downloadUrl, filename) {
+            const modal = document.getElementById("documentPreviewModal");
+            const image = document.getElementById("documentPreviewImage");
+            const frame = document.getElementById("documentPreviewFrame");
+            const fileState = document.getElementById(
+                "documentPreviewFileState",
+            );
+            const openLink = document.getElementById("documentPreviewOpenLink");
+            const downloadLink = document.getElementById(
+                "documentPreviewDownloadLink",
+            );
+
+            document.getElementById("documentPreviewTitle").textContent = title;
+            document.getElementById("documentPreviewFilename").textContent =
+                filename || "";
+
+            image.classList.add("hidden");
+            frame.classList.add("hidden");
+            fileState.classList.add("hidden");
+            image.src = "";
+            frame.src = "about:blank";
+
+            if (type === "image" && url) {
+                image.src = url;
+                image.classList.remove("hidden");
+            } else if (type === "pdf" && url) {
+                frame.src = url;
+                frame.classList.remove("hidden");
+            } else {
+                fileState.classList.remove("hidden");
+                fileState.classList.add("flex");
+            }
+
+            setPreviewActionState(openLink, url);
+            setPreviewActionState(downloadLink, downloadUrl);
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeDocumentPreview() {
+            const modal = document.getElementById("documentPreviewModal");
+            const image = document.getElementById("documentPreviewImage");
+            const frame = document.getElementById("documentPreviewFrame");
+            const fileState = document.getElementById(
+                "documentPreviewFileState",
+            );
+
+            image.src = "";
+            frame.src = "about:blank";
+            image.classList.add("hidden");
+            frame.classList.add("hidden");
+            fileState.classList.add("hidden");
+            fileState.classList.remove("flex");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            document.body.style.overflow = "";
+        }
+    </script>
 @endsection
+
+
+
+
+
