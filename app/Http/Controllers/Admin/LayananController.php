@@ -20,7 +20,7 @@ class LayananController extends Controller
             $query->where("nama_layanan", "like", "%" . $request->search . "%");
         }
 
-        $layanan = $query->orderBy("created_at", "desc")->paginate(10);
+        $layanan = $query->orderBy("id", "asc")->paginate(10);
         $layanan->appends($request->query());
 
         $layanan->getCollection()->transform(function ($item) {

@@ -135,57 +135,55 @@
     {{-- ============================================ --}}
     {{-- SECTION 2: LAYANAN PUBLIK DIGITAL --}}
     {{-- ============================================ --}}
-    <section id="layanan" class="bg-white py-12 lg:py-16">
-        <div class="max-w-[1440px] mx-auto px-6 lg:px-[102px]">
-            {{-- Section Header --}}
-            <div class="text-center mb-10">
-                <h2
-                    class="text-3xl lg:text-[48px] font-extrabold leading-tight lg:leading-[72px]"
-                >
-                    <span class="text-black">Layanan Publik </span>
-                    <span class="text-[#2563eb]">Digital</span>
-                </h2>
-                <p class="text-[16px] font-normal text-[#6b7280] leading-[28px] mt-1">Akses semua kebutuhan administrasi desa dalam satu genggaman</p>
-            </div>
-
-            {{-- Grid Layanan DINAMIS dari database --}}
-            <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 lg:gap-8"
-            >
-                @forelse ($layanan as $item)
-                    <a
-                        href="{{ route('login') }}"
-                        class="flex flex-col items-center group cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-4"
+    @if ($layanan->isNotEmpty())
+        <section id="layanan" class="bg-white py-12 lg:py-16">
+            <div class="max-w-[1440px] mx-auto px-6 lg:px-[102px]">
+                {{-- Section Header --}}
+                <div class="text-center mb-10">
+                    <h2
+                        class="text-3xl lg:text-[48px] font-extrabold leading-tight lg:leading-[72px]"
                     >
-                        <div
-                            class="bg-white rounded-[11px] w-[140px] h-[140px] lg:w-[158px] lg:h-[158px] flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md"
+                        <span class="text-black">Layanan Publik </span>
+                        <span class="text-[#2563eb]">Digital</span>
+                    </h2>
+                    <p class="text-[16px] font-normal text-[#6b7280] leading-[28px] mt-1">Akses semua kebutuhan administrasi desa dalam satu genggaman</p>
+                </div>
+
+                {{-- Grid Layanan DINAMIS dari database --}}
+                <div
+                    class="grid grid-cols-2 justify-items-center gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-x-5 lg:gap-y-7"
+                >
+                    @foreach ($layanan as $item)
+                        <a
+                            href="{{ route('login') }}"
+                            class="flex w-full max-w-[128px] flex-col items-center group cursor-pointer rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563eb] focus-visible:ring-offset-4 sm:max-w-[136px] lg:max-w-[148px]"
                         >
-                            @if ($item->icon_path)
-                                <img
-                                    src="{{ asset('images/layanan/' . $item->icon_path) }}"
-                                    alt="{{ $item->nama_layanan }}"
-                                    class="w-20 h-20 lg:w-24 lg:h-24 object-contain group-hover:scale-110 transition-transform duration-300"
-                                />
-                            @else
-                                <div
-                                    class="w-[100px] h-[96px] bg-[#e0edff] rounded-full flex items-center justify-center"
-                                >
-                                    <svg class="w-10 h-10 text-[#2563eb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                    </svg>
-                                </div>
-                            @endif
-                        </div>
-                        <p class="text-[14px] font-medium text-black text-center mt-2 leading-[28px] w-[140px] lg:w-[178px]">{{ $item->nama_layanan }}</p>
-                    </a>
-                @empty
-                    <div class="col-span-full text-center py-16">
-                        <p class="text-[#6b7280] text-base">Belum ada layanan yang tersedia saat ini.</p>
-                    </div>
-                @endforelse
+                            <div
+                                class="flex h-[124px] w-[124px] items-center justify-center rounded-[11px] bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:h-[132px] sm:w-[132px] lg:h-[144px] lg:w-[144px]"
+                            >
+                                @if ($item->icon_path)
+                                    <img
+                                        src="{{ asset('images/layanan/' . $item->icon_path) }}"
+                                        alt="{{ $item->nama_layanan }}"
+                                        class="h-16 w-16 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-[72px] sm:w-[72px] lg:h-[82px] lg:w-[82px]"
+                                    />
+                                @else
+                                    <div
+                                        class="flex h-[78px] w-[78px] items-center justify-center rounded-3xl bg-[#e0edff] sm:h-[82px] sm:w-[82px] lg:h-[90px] lg:w-[90px]"
+                                    >
+                                        <svg class="h-8 w-8 text-[#2563eb] lg:h-9 lg:w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                        </svg>
+                                    </div>
+                                @endif
+                            </div>
+                            <p class="mt-2 w-full text-center text-[12px] font-medium leading-5 text-black sm:text-[13px] lg:text-[13px]">{{ $item->nama_layanan }}</p>
+                        </a>
+                    @endforeach
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
     {{-- ============================================ --}}
     {{-- SECTION 3: PANDUAN PENGGUNAAN --}}
     {{-- ============================================ --}}

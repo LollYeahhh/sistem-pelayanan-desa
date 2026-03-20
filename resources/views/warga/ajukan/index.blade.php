@@ -70,7 +70,7 @@
                         </svg>
                     @endif
                 </div>
-                <p class="text-sm font-semibold text-[#0f172a] leading-tight">{{ $item->nama_layanan }}</p>
+                <p class="text-sm font-semibold text-[#0f172a] leading-tight capitalize">{{ $item->nama_layanan }}</p>
             </a>
         @empty
             <div class="col-span-full text-center py-16">

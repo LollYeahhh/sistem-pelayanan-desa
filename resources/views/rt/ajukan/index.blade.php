@@ -71,7 +71,7 @@
                             </svg>
                         @endif
                     </div>
-                    <p class="mt-4 text-sm font-semibold leading-6 text-[#111827]">
+                    <p class="mt-4 text-sm font-semibold leading-6 text-[#111827] capitalize">
                         {{ $item->nama_layanan }}
                     </p>
                 </a>

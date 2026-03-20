@@ -20,7 +20,10 @@ use Illuminate\Support\Facades\Route;
 // LANDING PAGE
 // ==========================================
 Route::get("/", function () {
-    $layanan = Layanan::where("is_active", true)->get();
+    $layanan = Layanan::where("is_active", true)
+        ->orderBy("id")
+        ->take(12)
+        ->get();
     return view("landing", compact("layanan"));
 })->name("home");
 Route::post("/aduan", [AduanMasyarakatController::class, "store"])->name(
