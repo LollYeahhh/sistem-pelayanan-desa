@@ -7,6 +7,7 @@ use App\Models\Layanan;
 use App\Models\PermohonanData;
 use App\Models\PermohonanLampiran;
 use App\Models\PermohonanSurat;
+use App\Notifications\AdminNewPengajuanNotification;
 use App\Support\LayananFormVersionManager;
 use App\Support\PengajuanIdentityMapper;
 use Illuminate\Http\Request;
@@ -90,7 +91,7 @@ class WargaController extends Controller
 
         $validated = Validator::make($payload, $rules, [], $labels)->validate();
 
-        DB::transaction(function () use ($request, $layanan, $validated, $publishedVersion) {
+        $permohonan = DB::transaction(function () use ($request, $layanan, $validated, $publishedVersion) {
             $noReg = "REG-" . strtoupper(Str::random(8));
             $permohonan = PermohonanSurat::create([
                 "user_id" => Auth::id(),
@@ -131,7 +132,13 @@ class WargaController extends Controller
                     }
                 }
             }
+
+            return $permohonan->load(["user", "layanan"]);
         });
+
+        $this->dispatchAdminNotification(
+            new AdminNewPengajuanNotification($permohonan),
+        );
 
         return redirect()
             ->route("warga.riwayat.index")

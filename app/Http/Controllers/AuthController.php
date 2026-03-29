@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\AdminNewUserActivationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -52,7 +53,11 @@ class AuthController extends Controller
         $validated["is_verified"] = false;
         $validated["status_akun"] = "nonaktif";
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        $this->dispatchAdminNotification(
+            new AdminNewUserActivationNotification($user),
+        );
 
         return redirect()
             ->route("login")

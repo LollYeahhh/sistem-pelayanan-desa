@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AduanMasyarakat;
+use App\Notifications\AdminNewAduanNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -37,7 +38,7 @@ class AduanMasyarakatController extends Controller
             "public",
         );
 
-        AduanMasyarakat::create([
+        $aduan = AduanMasyarakat::create([
             "nama_depan" => $request->string("nama_depan")->toString(),
             "nama_belakang" => $request->string("nama_belakang")->toString(),
             "email" => $request->string("email")->toString(),
@@ -45,6 +46,10 @@ class AduanMasyarakatController extends Controller
             "lampiran_path" => $lampiranPath,
             "status" => "baru",
         ]);
+
+        $this->dispatchAdminNotification(
+            new AdminNewAduanNotification($aduan),
+        );
 
         return redirect()
             ->to(route("home") . "#aduan")

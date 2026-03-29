@@ -24,22 +24,22 @@
             {{-- Menu Desktop --}}
             <div class="hidden lg:flex items-center gap-10">
                 <a
-                    href="#beranda"
+                    href="{{ route('home') }}#beranda"
                     class="text-[14px] font-medium text-[#282828] hover:text-primary transition"
                     >Beranda</a
                 >
                 <a
-                    href="#layanan"
+                    href="{{ route('home') }}#layanan"
                     class="text-[14px] font-medium text-[#282828] hover:text-primary transition"
                     >Layanan</a
                 >
                 <a
-                    href="#panduan"
+                    href="{{ route('home') }}#panduan"
                     class="text-[14px] font-medium text-[#282828] hover:text-primary transition"
                     >Panduan</a
                 >
                 <a
-                    href="#aduan"
+                    href="{{ route('home') }}#aduan"
                     class="text-[14px] font-medium text-[#282828] hover:text-primary transition"
                     >Aduan Masyarakat</a
                 >
@@ -92,16 +92,16 @@
             class="hidden lg:hidden pb-6 border-t border-gray-200 mt-2"
         >
             <div class="flex flex-col gap-4 pt-4">
-                <a href="#beranda" class="text-base font-medium text-[#282828]"
+                <a href="{{ route('home') }}#beranda" class="text-base font-medium text-[#282828]"
                     >Beranda</a
                 >
-                <a href="#layanan" class="text-base font-medium text-[#282828]"
+                <a href="{{ route('home') }}#layanan" class="text-base font-medium text-[#282828]"
                     >Layanan</a
                 >
-                <a href="#panduan" class="text-base font-medium text-[#282828]"
+                <a href="{{ route('home') }}#panduan" class="text-base font-medium text-[#282828]"
                     >Panduan</a
                 >
-                <a href="#aduan" class="text-base font-medium text-[#282828]"
+                <a href="{{ route('home') }}#aduan" class="text-base font-medium text-[#282828]"
                     >Aduan Masyarakat</a
                 >
                 @auth

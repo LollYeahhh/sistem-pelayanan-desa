@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\LayananController as AdminLayananController;
 use App\Http\Controllers\Admin\FormBuilderController as AdminFormBuilderController;
 use App\Http\Controllers\Admin\WargaController as AdminWargaController;
 use App\Http\Controllers\Admin\PengajuanController as AdminPengajuanController;
+use App\Http\Controllers\Admin\AdminNotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\ArsipController as AdminArsipController;
 use App\Http\Controllers\Admin\MonografiController as AdminMonografiController;
 use App\Http\Controllers\Admin\MonografiFormBuilderController as AdminMonografiFormBuilderController;
@@ -64,6 +65,19 @@ Route::middleware(["auth", "role:admin"])
             AdminDashboardController::class,
             "search",
         ])->name("search");
+
+        Route::get("/notifications", [
+            AdminNotificationController::class,
+            "index",
+        ])->name("notifications.index");
+        Route::post("/notifications/read-all", [
+            AdminNotificationController::class,
+            "markAllAsRead",
+        ])->name("notifications.read-all");
+        Route::post("/notifications/{notification}/read", [
+            AdminNotificationController::class,
+            "markAsRead",
+        ])->name("notifications.read");
 
         // Manajemen Layanan
         Route::get("/layanan", [AdminLayananController::class, "index"])->name(
