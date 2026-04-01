@@ -9,6 +9,7 @@ use App\Support\LayananFormVersionManager;
 use App\Support\PengajuanIdentityMapper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PengajuanController extends Controller
@@ -91,11 +92,30 @@ class PengajuanController extends Controller
 
     public function approve(PermohonanSurat $permohonan)
     {
+        $permohonan->loadMissing(["user", "layanan"]);
+
         $permohonan->update([
             "status" => "disetujui",
             "reviewed_by" => auth()->id(),
             "reviewed_at" => now(),
         ]);
+
+        $this->dispatchDatabaseNotification(
+            $permohonan->user,
+            [
+                "kind" => "status_disetujui",
+                "title" => "Pengajuan disetujui",
+                "message" => sprintf(
+                    "%s untuk %s telah disetujui.",
+                    $permohonan->no_registrasi ?: "Pengajuan #" . $permohonan->id,
+                    $permohonan->layanan->nama_layanan ?? "layanan",
+                ),
+                "url" => $permohonan->user->role === "rt"
+                    ? route("rt.riwayat.show", $permohonan)
+                    : route("warga.riwayat.show", $permohonan),
+            ],
+            "App\\Notifications\\PengajuanStatusUpdatedNotification",
+        );
 
         return redirect()
             ->route("admin.pengajuan.show", $permohonan)
@@ -105,6 +125,7 @@ class PengajuanController extends Controller
     public function reject(Request $request, PermohonanSurat $permohonan)
     {
         $request->validate(["alasan_tolak" => "required|string|max:500"]);
+        $permohonan->loadMissing(["user", "layanan"]);
 
         $permohonan->update([
             "status" => "ditolak",
@@ -112,6 +133,26 @@ class PengajuanController extends Controller
             "reviewed_by" => auth()->id(),
             "reviewed_at" => now(),
         ]);
+
+        $message = sprintf(
+            "%s untuk %s ditolak. Alasan: %s",
+            $permohonan->no_registrasi ?: "Pengajuan #" . $permohonan->id,
+            $permohonan->layanan->nama_layanan ?? "layanan",
+            Str::limit($request->alasan_tolak, 120),
+        );
+
+        $this->dispatchDatabaseNotification(
+            $permohonan->user,
+            [
+                "kind" => "status_ditolak",
+                "title" => "Pengajuan ditolak",
+                "message" => $message,
+                "url" => $permohonan->user->role === "rt"
+                    ? route("rt.riwayat.show", $permohonan)
+                    : route("warga.riwayat.show", $permohonan),
+            ],
+            "App\\Notifications\\PengajuanStatusUpdatedNotification",
+        );
 
         return redirect()
             ->route("admin.pengajuan.show", $permohonan)

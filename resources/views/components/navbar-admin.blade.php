@@ -345,8 +345,13 @@
 
         let initialized = false;
         let knownUnreadIds = new Set();
-        let audioContext = null;
         let audioReady = false;
+        let soundUnlocked = false;
+        const notificationSound = new Audio(
+            "{{ asset('sounds/notification.mp3') }}",
+        );
+        notificationSound.preload = "auto";
+        notificationSound.volume = 1;
 
         function escapeHtml(value) {
             const div = document.createElement("div");
@@ -402,32 +407,36 @@
             });
         }
 
+        function unlockSound() {
+            if (soundUnlocked) return;
+
+            const previousMuted = notificationSound.muted;
+            notificationSound.muted = true;
+            notificationSound
+                .play()
+                .then(function () {
+                    notificationSound.pause();
+                    notificationSound.currentTime = 0;
+                    notificationSound.muted = previousMuted;
+                    soundUnlocked = true;
+                    audioReady = true;
+                })
+                .catch(function () {
+                    notificationSound.muted = previousMuted;
+                    audioReady = false;
+                });
+        }
+
         function playBeep() {
             if (!audioReady) return;
 
             try {
-                audioContext =
-                    audioContext ||
-                    new (window.AudioContext || window.webkitAudioContext)();
-
-                if (audioContext.state === "suspended") {
-                    audioContext.resume();
-                }
-
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                const now = audioContext.currentTime;
-
-                oscillator.type = "sine";
-                oscillator.frequency.setValueAtTime(880, now);
-                gainNode.gain.setValueAtTime(0.0001, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                oscillator.start(now);
-                oscillator.stop(now + 0.25);
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(function () {
+                    audioReady = false;
+                    soundUnlocked = false;
+                });
             } catch (error) {
                 audioReady = false;
             }
@@ -543,7 +552,7 @@
             document.addEventListener(
                 eventName,
                 function () {
-                    audioReady = true;
+                    unlockSound();
                 },
                 { once: true },
             );

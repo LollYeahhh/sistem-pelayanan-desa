@@ -51,9 +51,18 @@ class AdminNotificationController extends Controller
             "kind" => $notification->data["kind"] ?? "umum",
             "title" => $notification->data["title"] ?? "Notifikasi baru",
             "message" => $notification->data["message"] ?? "",
-            "url" => $notification->data["url"] ?? route("admin.dashboard"),
+            "url" => $notification->data["url"] ?? $this->fallbackUrl($notification->notifiable),
             "created_at_label" => optional($notification->created_at)->translatedFormat("d M Y, H:i"),
             "is_read" => $notification->read_at !== null,
         ];
+    }
+
+    protected function fallbackUrl(object $user): string
+    {
+        return match ($user->role ?? null) {
+            "rt" => route("rt.dashboard"),
+            "warga" => route("warga.dashboard"),
+            default => route("admin.dashboard"),
+        };
     }
 }

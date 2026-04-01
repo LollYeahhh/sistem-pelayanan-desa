@@ -1,6 +1,10 @@
 @extends ("layouts.admin")
 @section ("title", "Profil " . $user->nama_lengkap)
 @section ("content")
+    @php
+        $jenisKelaminOptions = \App\Models\User::getJenisKelaminOptions();
+        $statusPerkawinanOptions = \App\Models\User::getStatusPerkawinanOptions();
+    @endphp
     <div class="flex items-start gap-3 mb-6">
         <a
             href="{{ route('admin.warga.index') }}"
@@ -111,10 +115,8 @@
                     "Tanggal Lahir" => $user->tanggal_lahir
                         ? date("d/m/Y", strtotime($user->tanggal_lahir))
                         : "-",
-                    "Jenis Kelamin" => ucfirst($user->jenis_kelamin ?? "-"),
-                    "Status Perkawinan" => ucwords(
-                        str_replace("_", " ", $user->status_perkawinan ?? "-"),
-                    ),
+                    "Jenis Kelamin" => $user->jenis_kelamin_label,
+                    "Status Perkawinan" => $user->status_perkawinan_label,
                     "Agama" => ucfirst($user->agama ?? "-"),
                     "Pekerjaan" => ucfirst($user->pekerjaan ?? "-"),
                 ];
@@ -293,28 +295,18 @@
                             class="w-full bg-[#F8FAFC] border border-[#F3F3F3] rounded-2xl h-[51px] px-4 text-sm text-dark focus:ring-primary focus:border-primary"
                         >
                             <option value="">Pilih</option>
-                            <option
-                                value="laki-laki"
-                                {{
-                                    old("jenis_kelamin", $user->jenis_kelamin) ===
-                                        "laki-laki"
+                            @foreach ($jenisKelaminOptions as $value => $label)
+                                <option
+                                    value="{{ $value }}"
+                                    {{
+                                        old("jenis_kelamin", $user->jenis_kelamin) === $value
                                             ? "selected"
                                             : ""
-                                }}
-                            >
-                                Laki-laki
-                            </option>
-                            <option
-                                value="perempuan"
-                                {{
-                                    old("jenis_kelamin", $user->jenis_kelamin) ===
-                                        "perempuan"
-                                            ? "selected"
-                                            : ""
-                                }}
-                            >
-                                Perempuan
-                            </option>
+                                    }}
+                                >
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -329,13 +321,7 @@
                             class="w-full bg-[#F8FAFC] border border-[#F3F3F3] rounded-2xl h-[51px] px-4 text-sm text-dark focus:ring-primary focus:border-primary"
                         >
                             <option value="">Pilih</option>
-                            @foreach ([
-                                    "belum_menikah" => "Belum Menikah",
-                                    "menikah" => "Menikah",
-                                    "cerai_hidup" => "Cerai Hidup",
-                                    "cerai_mati" => "Cerai Mati",
-                                ]
-                                as $value => $label)
+                            @foreach ($statusPerkawinanOptions as $value => $label)
                                 <option
                                     value="{{ $value }}"
                                     {{

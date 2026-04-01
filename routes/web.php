@@ -252,6 +252,19 @@ Route::middleware(["auth", "role:rt"])
         // Search
         Route::get("/search", [RTController::class, "search"])->name("search");
 
+        Route::get("/notifications", [
+            AdminNotificationController::class,
+            "index",
+        ])->name("notifications.index");
+        Route::post("/notifications/read-all", [
+            AdminNotificationController::class,
+            "markAllAsRead",
+        ])->name("notifications.read-all");
+        Route::post("/notifications/{notification}/read", [
+            AdminNotificationController::class,
+            "markAsRead",
+        ])->name("notifications.read");
+
         Route::get("/monografi", [RTMonografiController::class, "index"])->name(
             "monografi.index",
         );
@@ -309,6 +322,19 @@ Route::middleware(["auth", "role:warga"])
             App\Http\Controllers\Warga\WargaController::class,
             "search",
         ])->name("search");
+
+        Route::get("/notifications", [
+            AdminNotificationController::class,
+            "index",
+        ])->name("notifications.index");
+        Route::post("/notifications/read-all", [
+            AdminNotificationController::class,
+            "markAllAsRead",
+        ])->name("notifications.read-all");
+        Route::post("/notifications/{notification}/read", [
+            AdminNotificationController::class,
+            "markAsRead",
+        ])->name("notifications.read");
 
         // Ajukan Layanan (Multi-step)
         Route::middleware("verified.active")->group(function () {

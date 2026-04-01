@@ -84,15 +84,61 @@
                 </div>
             </div>
 
-            <button
-                type="button"
-                class="hidden text-[#141B34] transition hover:text-primary sm:inline-flex"
-                aria-label="Notifikasi RT"
+            <div
+                class="relative hidden shrink-0 sm:block"
+                id="rtNotificationWrapper"
             >
-                <svg class="h-[35px] w-[35px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-                </svg>
-            </button>
+                <button
+                    type="button"
+                    id="rtNotificationButton"
+                    aria-expanded="false"
+                    class="relative flex h-[35px] w-[35px] items-center justify-center text-[#141B34] transition hover:text-primary"
+                >
+                    <svg class="h-[35px] w-[35px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                    </svg>
+                    <span
+                        id="rtNotificationDot"
+                        class="hidden absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"
+                    ></span>
+                </button>
+
+                <div
+                    id="rtNotificationDropdown"
+                    class="absolute right-0 top-[46px] z-50 hidden w-[360px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
+                >
+                    <div class="flex items-start justify-between border-b border-gray-100 px-4 py-3">
+                        <div>
+                            <p class="text-sm font-bold text-[#0F172A]">Notifikasi</p>
+                            <p
+                                id="rtNotificationCount"
+                                class="mt-0.5 text-xs text-gray-400"
+                            >
+                                Memuat notifikasi...
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            id="rtNotificationReadAll"
+                            class="hidden text-xs font-semibold text-primary hover:underline"
+                        >
+                            Tandai semua dibaca
+                        </button>
+                    </div>
+
+                    <div
+                        id="rtNotificationEmpty"
+                        class="hidden px-5 py-8 text-center text-sm text-gray-400"
+                    >
+                        Belum ada notifikasi terbaru.
+                    </div>
+
+                    <div
+                        id="rtNotificationList"
+                        class="max-h-[360px] overflow-y-auto divide-y divide-gray-100"
+                    ></div>
+                </div>
+            </div>
 
             <button
                 type="button"
@@ -266,6 +312,251 @@
             attributeFilter: ["class"],
         });
     }
+</script>
+
+<script>
+    (function () {
+        const wrapper = document.getElementById("rtNotificationWrapper");
+        const button = document.getElementById("rtNotificationButton");
+        const dropdown = document.getElementById("rtNotificationDropdown");
+        const dot = document.getElementById("rtNotificationDot");
+        const count = document.getElementById("rtNotificationCount");
+        const list = document.getElementById("rtNotificationList");
+        const empty = document.getElementById("rtNotificationEmpty");
+        const readAllButton = document.getElementById("rtNotificationReadAll");
+
+        if (!wrapper || !button || !dropdown) return;
+
+        const indexUrl = "{{ route('rt.notifications.index') }}";
+        const readAllUrl = "{{ route('rt.notifications.read-all') }}";
+        const readUrlTemplate =
+            "{{ route('rt.notifications.read', ['notification' => '__ID__']) }}";
+        const csrfToken =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") ?? "";
+
+        const iconMap = {
+            status_disetujui:
+                '<svg class="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m6 2.25a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            status_ditolak:
+                '<svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+            umum:
+                '<svg class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2.25"/></svg>',
+        };
+
+        let initialized = false;
+        let knownUnreadIds = new Set();
+        let audioReady = false;
+        let soundUnlocked = false;
+        const notificationSound = new Audio(
+            "{{ asset('sounds/notification.mp3') }}",
+        );
+        notificationSound.preload = "auto";
+        notificationSound.volume = 1;
+
+        function escapeHtml(value) {
+            const div = document.createElement("div");
+            div.textContent = value ?? "";
+            return div.innerHTML;
+        }
+
+        function setUnreadState(unreadCount) {
+            dot.classList.toggle("hidden", unreadCount < 1);
+            readAllButton.classList.toggle("hidden", unreadCount < 1);
+            count.textContent =
+                unreadCount > 0
+                    ? unreadCount + " notifikasi belum dibaca"
+                    : "Semua notifikasi sudah dibaca";
+        }
+
+        function renderNotifications(items) {
+            list.innerHTML = "";
+            empty.classList.toggle("hidden", items.length > 0);
+
+            items.forEach(function (item) {
+                const anchor = document.createElement("a");
+                anchor.href = item.url;
+                anchor.dataset.notificationId = item.id;
+                anchor.className =
+                    "flex gap-3 px-4 py-3 transition hover:bg-[#F8FAFC]";
+
+                const icon = iconMap[item.kind] || iconMap.umum;
+                const unreadDot = item.is_read
+                    ? ""
+                    : '<span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-red-500"></span>';
+
+                anchor.innerHTML =
+                    '<div class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9]">' +
+                    icon +
+                    "</div>" +
+                    '<div class="min-w-0 flex-1">' +
+                    '<div class="flex items-start gap-2">' +
+                    '<p class="flex-1 text-sm font-semibold text-[#0f172a]">' +
+                    escapeHtml(item.title) +
+                    "</p>" +
+                    unreadDot +
+                    "</div>" +
+                    '<p class="mt-1 text-xs leading-5 text-gray-500">' +
+                    escapeHtml(item.message) +
+                    "</p>" +
+                    '<p class="mt-1 text-[11px] font-medium text-gray-400">' +
+                    escapeHtml(item.created_at_label) +
+                    "</p>" +
+                    "</div>";
+
+                list.appendChild(anchor);
+            });
+        }
+
+        function unlockSound() {
+            if (soundUnlocked) return;
+
+            const previousMuted = notificationSound.muted;
+            notificationSound.muted = true;
+            notificationSound
+                .play()
+                .then(function () {
+                    notificationSound.pause();
+                    notificationSound.currentTime = 0;
+                    notificationSound.muted = previousMuted;
+                    soundUnlocked = true;
+                    audioReady = true;
+                })
+                .catch(function () {
+                    notificationSound.muted = previousMuted;
+                    audioReady = false;
+                });
+        }
+
+        function playBeep() {
+            if (!audioReady) return;
+
+            try {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(function () {
+                    audioReady = false;
+                    soundUnlocked = false;
+                });
+            } catch (error) {
+                audioReady = false;
+            }
+        }
+
+        function handlePayload(payload) {
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            setUnreadState(payload.unread_count ?? 0);
+            renderNotifications(items);
+
+            const currentUnreadIds = new Set(
+                items.filter((item) => !item.is_read).map((item) => item.id),
+            );
+
+            if (initialized) {
+                const hasNewUnread = Array.from(currentUnreadIds).some(
+                    (id) => !knownUnreadIds.has(id),
+                );
+
+                if (hasNewUnread) {
+                    playBeep();
+                }
+            }
+
+            knownUnreadIds = currentUnreadIds;
+            initialized = true;
+        }
+
+        function postJson(url) {
+            return fetch(url, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: "{}",
+                keepalive: true,
+            }).then((response) => response.json());
+        }
+
+        function fetchNotifications() {
+            return fetch(indexUrl, {
+                headers: {
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+            })
+                .then((response) => response.json())
+                .then(handlePayload)
+                .catch(() => {});
+        }
+
+        function markAsRead(id) {
+            return postJson(readUrlTemplate.replace("__ID__", id)).catch(
+                () => {},
+            );
+        }
+
+        button.addEventListener("click", function () {
+            const isHidden = dropdown.classList.contains("hidden");
+            dropdown.classList.toggle("hidden");
+            button.setAttribute("aria-expanded", String(isHidden));
+
+            if (isHidden) {
+                fetchNotifications();
+            }
+        });
+
+        readAllButton.addEventListener("click", function () {
+            postJson(readAllUrl).then(() => {
+                knownUnreadIds = new Set();
+                fetchNotifications();
+            });
+        });
+
+        list.addEventListener("click", function (event) {
+            const link = event.target.closest("a[data-notification-id]");
+            if (!link) return;
+
+            event.preventDefault();
+
+            const targetUrl = link.href;
+            const notificationId = link.dataset.notificationId;
+
+            markAsRead(notificationId).finally(function () {
+                window.location.href = targetUrl;
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!wrapper.contains(event.target)) {
+                dropdown.classList.add("hidden");
+                button.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                dropdown.classList.add("hidden");
+                button.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        ["click", "keydown", "touchstart"].forEach(function (eventName) {
+            document.addEventListener(
+                eventName,
+                function () {
+                    unlockSound();
+                },
+                { once: true },
+            );
+        });
+
+        fetchNotifications();
+        window.setInterval(fetchNotifications, 15000);
+    })();
 </script>
 
 <script>

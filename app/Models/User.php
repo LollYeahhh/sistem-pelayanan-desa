@@ -11,6 +11,18 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const JENIS_KELAMIN_OPTIONS = [
+        "laki-laki" => "Laki-laki",
+        "perempuan" => "Perempuan",
+    ];
+
+    public const STATUS_PERKAWINAN_OPTIONS = [
+        "belum_menikah" => "Belum Menikah",
+        "menikah" => "Menikah",
+        "cerai_hidup" => "Cerai Hidup",
+        "cerai_mati" => "Cerai Mati",
+    ];
+
     protected $fillable = [
         "nama_lengkap",
         "nik",
@@ -67,9 +79,55 @@ class User extends Authenticatable
         return $this->hasMany(MonografiData::class, "rt_user_id");
     }
 
+    public static function getJenisKelaminOptions(): array
+    {
+        return self::JENIS_KELAMIN_OPTIONS;
+    }
+
+    public static function getStatusPerkawinanOptions(): array
+    {
+        return self::STATUS_PERKAWINAN_OPTIONS;
+    }
+
+    public static function normalizeJenisKelaminValue(?string $value): ?string
+    {
+        return self::normalizeOptionValue($value, self::JENIS_KELAMIN_OPTIONS);
+    }
+
+    public static function normalizeStatusPerkawinanValue(?string $value): ?string
+    {
+        return self::normalizeOptionValue($value, self::STATUS_PERKAWINAN_OPTIONS);
+    }
+
+    public static function getJenisKelaminLabel(?string $value, string $fallback = "-"): string
+    {
+        return self::resolveOptionLabel($value, self::JENIS_KELAMIN_OPTIONS, $fallback);
+    }
+
+    public static function getStatusPerkawinanLabel(?string $value, string $fallback = "-"): string
+    {
+        return self::resolveOptionLabel($value, self::STATUS_PERKAWINAN_OPTIONS, $fallback);
+    }
+
     protected function namaLengkap(): Attribute
     {
         return $this->normalizedTitleCaseAttribute();
+    }
+
+    protected function jenisKelamin(): Attribute
+    {
+        return Attribute::make(
+            get: fn(?string $value) => self::normalizeJenisKelaminValue($value),
+            set: fn(?string $value) => self::normalizeJenisKelaminValue($value),
+        );
+    }
+
+    protected function statusPerkawinan(): Attribute
+    {
+        return Attribute::make(
+            get: fn(?string $value) => self::normalizeStatusPerkawinanValue($value),
+            set: fn(?string $value) => self::normalizeStatusPerkawinanValue($value),
+        );
     }
 
     protected function tempatLahir(): Attribute
@@ -93,6 +151,16 @@ class User extends Authenticatable
             get: fn(?string $value) => $this->normalizeTitleCase($value),
             set: fn(?string $value) => $this->normalizeTitleCase($value),
         );
+    }
+
+    public function getJenisKelaminLabelAttribute(): string
+    {
+        return self::getJenisKelaminLabel($this->getRawOriginal("jenis_kelamin"));
+    }
+
+    public function getStatusPerkawinanLabelAttribute(): string
+    {
+        return self::getStatusPerkawinanLabel($this->getRawOriginal("status_perkawinan"));
     }
 
     protected function normalizeTitleCase(?string $value): ?string
@@ -126,5 +194,41 @@ class User extends Authenticatable
         }, $parts);
 
         return implode('', $normalized);
+    }
+
+    private static function normalizeOptionValue(?string $value, array $options): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        if ($value === "") {
+            return null;
+        }
+
+        if (array_key_exists($value, $options)) {
+            return $value;
+        }
+
+        $matchedKey = array_search($value, $options, true);
+
+        if ($matchedKey !== false) {
+            return $matchedKey;
+        }
+
+        return $value;
+    }
+
+    private static function resolveOptionLabel(?string $value, array $options, string $fallback): string
+    {
+        $normalizedValue = self::normalizeOptionValue($value, $options);
+
+        if ($normalizedValue === null) {
+            return $fallback;
+        }
+
+        return $options[$normalizedValue] ?? $normalizedValue;
     }
 }

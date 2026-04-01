@@ -8,6 +8,7 @@ use App\Models\MonografiCategory;
 use App\Models\PermohonanData;
 use App\Models\PermohonanLampiran;
 use App\Models\PermohonanSurat;
+use App\Models\User;
 use App\Notifications\AdminNewPengajuanNotification;
 use App\Support\LayananFormVersionManager;
 use App\Support\PengajuanIdentityMapper;
@@ -237,14 +238,10 @@ class RTController extends Controller
             ],
             "tempat_lahir" => "nullable|string|max:100",
             "tanggal_lahir" => "nullable|date",
-            "jenis_kelamin" => "nullable|in:Laki-laki,Perempuan",
+            "jenis_kelamin" => ["nullable", Rule::in(array_keys(User::getJenisKelaminOptions()))],
             "agama" => "nullable|string|max:50",
-            "status_perkawinan" => "nullable|string|max:50",
+            "status_perkawinan" => ["nullable", Rule::in(array_keys(User::getStatusPerkawinanOptions()))],
             "pekerjaan" => "nullable|string|max:100",
-            "alamat" => "nullable|string|max:500",
-            "rt_rw" => "nullable|string|max:20",
-            "desa" => "nullable|string|max:100",
-            "kecamatan" => "nullable|string|max:100",
             "no_hp" => "nullable|string|max:20",
         ]);
 

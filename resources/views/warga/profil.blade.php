@@ -4,6 +4,8 @@
 
 @php
     $user = $user ?? auth()->user();
+    $jenisKelaminOptions = \App\Models\User::getJenisKelaminOptions();
+    $statusPerkawinanOptions = \App\Models\User::getStatusPerkawinanOptions();
 @endphp
 
 @section ("content")
@@ -164,206 +166,110 @@
                             class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         >
                             <option value="">-- Pilih --</option>
-                            <option
-                                value="Laki-laki"
-                                {{
-                                    old("jenis_kelamin", $user->jenis_kelamin) ===
-                                        "Laki-laki"
-                                            ? "selected"
-                                            : ""
-                                }}
-                                >Laki-laki
-                            </option>
-                            <option
-                                value="Perempuan"
-                                {{
-                                    old("jenis_kelamin", $user->jenis_kelamin) ===
-                                        "Perempuan"
-                                            ? "selected"
-                                            : ""
-                                }}
-                                >Perempuan
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-sm font-semibold text-[#0f172a] mb-2"
-                            >Agama</label
-                        >
-                        <select
-                            name="agama"
-                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        >
-                            <option value="">-- Pilih --</option>
-                            @foreach (["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"]
-                                as $agama)
+                            @foreach ($jenisKelaminOptions as $value => $label)
                                 <option
-                                    value="{{ $agama }}"
+                                    value="{{ $value }}"
                                     {{
-                                        old("agama", $user->agama) === $agama
-                                                ? "selected"
-                                                : ""
+                                        old("jenis_kelamin", $user->jenis_kelamin) === $value
+                                            ? "selected"
+                                            : ""
                                     }}
-                                    >{{ $agama }}
+                                    >{{ $label }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-
                     <div>
-                        <label
-                            class="block text-sm font-semibold text-[#0f172a] mb-2"
-                            >Status Perkawinan</label
-                        >
-                        <select
-                            name="status_perkawinan"
-                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        >
-                            <option value="">-- Pilih --</option>
-                            @foreach (["Belum Menikah", "Menikah", "Cerai Hidup", "Cerai Mati"] as $status)
-                                <option
-                                    value="{{ $status }}"
-                                    {{
-                                        old(
-                                                "status_perkawinan",
-                                                $user->status_perkawinan,
-                                            ) === $status
-                                                ? "selected"
-                                                : ""
-                                    }}
-                                    >{{ $status }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-sm font-semibold text-[#0f172a] mb-2"
-                            >Pekerjaan</label
-                        >
-                        <input
-                            type="text"
-                            name="pekerjaan"
-                            value="{{ old('pekerjaan', $user->pekerjaan) }}"
-                            placeholder="Masukkan pekerjaan"
-                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-sm font-semibold text-[#0f172a] mb-2"
-                            >No. HP / WhatsApp</label
-                        >
-                        <input
-                            type="text"
-                            name="no_hp"
-                            value="{{ old('no_hp', $user->no_hp) }}"
-                            placeholder="Contoh: 08xxxxxxxxxx"
-                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {{-- Alamat --}}
-            <div
-                class="bg-white rounded-2xl border border-gray-100 p-6 lg:p-8 mb-6"
-            >
-                <div class="flex items-center gap-3 mb-6">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
-                    >
-                        <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-[#0f172a]">
-                        Alamat & Domisili
-                    </h3>
-                </div>
-
-                <div class="space-y-5">
-                    <div>
-                        <label
-                            class="block text-sm font-semibold text-[#0f172a] mb-2"
-                            >Alamat Lengkap</label
-                        >
-                        <textarea
-                            name="alamat"
-                            rows="3"
-                            placeholder="Masukkan alamat lengkap"
-                            class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl px-4 py-3 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
-                            >{{
-                                old(
-                                    "alamat",
-                                    $user->alamat,
-                                )
-                            }}</textarea
-                        >
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-[#0f172a] mb-2"
-                                >RT / RW</label
-                            >
-                            <input
-                                type="text"
-                                name="rt_rw"
-                                value="{{ old('rt_rw', $user->rt_rw) }}"
-                                placeholder="Contoh: 001/002"
-                                class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-[#0f172a] mb-2"
-                                >Desa / Kelurahan</label
-                            >
-                            <input
-                                type="text"
-                                name="desa"
-                                value="{{ old('desa', $user->desa) }}"
-                                placeholder="Nama desa"
-                                class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="block text-sm font-semibold text-[#0f172a] mb-2"
-                                >Kecamatan</label
-                            >
-                            <input
-                                type="text"
-                                name="kecamatan"
-                                value="{{ old('kecamatan', $user->kecamatan) }}"
-                                placeholder="Nama kecamatan"
-                                class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Submit --}}
-            <div class="flex justify-end">
-                <button
-                    type="submit"
-                    class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-primary-hover transition shadow-md shadow-primary/30"
-                >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    Simpan Perubahan
-                </button>
-            </div>
-        </form>
-    </div>
+                                    <label
+                                        class="block text-sm font-semibold text-[#0f172a] mb-2"
+                                        >Agama</label
+                                    >
+                                    <select
+                                        name="agama"
+                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    >
+                                        <option value="">-- Pilih --</option>
+                                        @foreach (["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"]
+                                            as $agama)
+                                            <option
+                                                value="{{ $agama }}"
+                                                {{
+                                                    old("agama", $user->agama) === $agama
+                                                            ? "selected"
+                                                            : ""
+                                                }}
+                                                >{{ $agama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-sm font-semibold text-[#0f172a] mb-2"
+                                        >Status Perkawinan</label
+                                    >
+                                    <select
+                                        name="status_perkawinan"
+                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    >
+                                        <option value="">-- Pilih --</option>
+                                        @foreach ($statusPerkawinanOptions as $value => $label)
+                                            <option
+                                                value="{{ $value }}"
+                                                {{
+                                                    old(
+                                                            "status_perkawinan",
+                                                            $user->status_perkawinan,
+                                                        ) === $value
+                                                            ? "selected"
+                                                            : ""
+                                                }}
+                                                >{{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-sm font-semibold text-[#0f172a] mb-2"
+                                        >Pekerjaan</label
+                                    >
+                                    <input
+                                        type="text"
+                                        name="pekerjaan"
+                                        value="{{ old('pekerjaan', $user->pekerjaan) }}"
+                                        placeholder="Masukkan pekerjaan"
+                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    />
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-sm font-semibold text-[#0f172a] mb-2"
+                                        >No. HP / WhatsApp</label
+                                    >
+                                    <input
+                                        type="text"
+                                        name="no_hp"
+                                        value="{{ old('no_hp', $user->no_hp) }}"
+                                        placeholder="Contoh: 08xxxxxxxxxx"
+                                        class="w-full bg-[#f8fafc] border border-gray-200 rounded-xl h-[48px] px-4 text-sm text-[#0f172a] placeholder-[#94a3b8] focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    />
+                                </div>
+                                </div>
+                                </div>
+                                {{-- Submit --}}
+                                <div class="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center gap-2 bg-primary text-white font-bold text-sm px-8 py-3 rounded-xl hover:bg-primary-hover transition shadow-md shadow-primary/30"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                        </svg>
+                                        Simpan Perubahan
+                                    </button>
+                                </div>
+                                </form>
+                                </div>
 
 @endsection

@@ -3,6 +3,8 @@
 
 @php
     $user = $user ?? auth()->user();
+    $jenisKelaminOptions = \App\Models\User::getJenisKelaminOptions();
+    $statusPerkawinanOptions = \App\Models\User::getStatusPerkawinanOptions();
 @endphp
 
 @section ("content")
@@ -58,8 +60,9 @@
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Jenis Kelamin</label>
                         <select name="jenis_kelamin" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20">
                             <option value="">-- Pilih --</option>
-                            <option value="Laki-laki" {{ old('jenis_kelamin', $user->jenis_kelamin) === 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="Perempuan" {{ old('jenis_kelamin', $user->jenis_kelamin) === 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            @foreach ($jenisKelaminOptions as $value => $label)
+                                <option value="{{ $value }}" {{ old('jenis_kelamin', $user->jenis_kelamin) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -68,27 +71,16 @@
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Status Perkawinan</label>
-                        <input type="text" name="status_perkawinan" value="{{ old('status_perkawinan', $user->status_perkawinan) }}" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                        <select name="status_perkawinan" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20">
+                            <option value="">-- Pilih --</option>
+                            @foreach ($statusPerkawinanOptions as $value => $label)
+                                <option value="{{ $value }}" {{ old('status_perkawinan', $user->status_perkawinan) === $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Pekerjaan</label>
                         <input type="text" name="pekerjaan" value="{{ old('pekerjaan', $user->pekerjaan) }}" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Alamat Lengkap</label>
-                        <textarea name="alamat" rows="3" class="w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20">{{ old('alamat', $user->alamat) }}</textarea>
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-[#0F172A]">RT / RW</label>
-                        <input type="text" name="rt_rw" value="{{ old('rt_rw', $user->rt_rw) }}" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Desa / Kelurahan</label>
-                        <input type="text" name="desa" value="{{ old('desa', $user->desa) }}" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-semibold text-[#0F172A]">Kecamatan</label>
-                        <input type="text" name="kecamatan" value="{{ old('kecamatan', $user->kecamatan) }}" class="h-[48px] w-full rounded-xl border border-gray-200 bg-[#F8FAFC] px-4 text-sm text-[#0F172A] transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold text-[#0F172A]">No. HP / WhatsApp</label>

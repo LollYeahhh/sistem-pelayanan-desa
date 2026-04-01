@@ -44,8 +44,8 @@ class WargaController extends Controller
             ],
             "tempat_lahir" => "nullable|string|max:100",
             "tanggal_lahir" => "nullable|date",
-            "jenis_kelamin" => "nullable|in:Laki-laki,Perempuan",
-            "status_perkawinan" => "nullable|string|max:50",
+            "jenis_kelamin" => ["nullable", Rule::in(array_keys(User::getJenisKelaminOptions()))],
+            "status_perkawinan" => ["nullable", Rule::in(array_keys(User::getStatusPerkawinanOptions()))],
             "agama" => "nullable|string|max:50",
             "pekerjaan" => "nullable|string|max:100",
         ]);
