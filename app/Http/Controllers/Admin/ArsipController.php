@@ -13,6 +13,7 @@ class ArsipController extends Controller
         $query = PermohonanSurat::with(["user", "layanan"])->whereIn("status", [
             "disetujui",
             "ditolak",
+            "selesai",
         ]);
 
         if ($request->filled("search")) {

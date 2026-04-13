@@ -11,13 +11,15 @@ class PermohonanSurat extends Model
     protected $fillable = [
         'user_id', 'layanan_id', 'form_version_id', 'no_registrasi', 'status',
         'catatan_pemohon', 'catatan_admin', 'alasan_penolakan', 'reviewed_by',
-        'reviewed_at', 'deadline',
+        'reviewed_at', 'deadline', 'file_dokumen_path', 'file_dokumen_nama',
+        'file_dokumen_mime', 'dokumen_selesai_at',
     ];
 
     protected function casts(): array
     {
         return [
             'reviewed_at' => 'datetime',
+            'dokumen_selesai_at' => 'datetime',
         ];
     }
 

@@ -1,9 +1,8 @@
 @extends ("layouts.guest")
 @section ("title", "Pelayanan Desa Dukuhtengah")
 @section ("content")
-    {{-- ============================================ --}}
-    {{-- SECTION 1: HERO --}}
-    {{-- ============================================ --}}
+
+    -- SECTION 1: HERO --
     <section
         id="beranda"
         class="relative bg-gradient-to-b from-[#d8e7ff] from-[6%] via-[#ddeaff] via-[40%] to-white overflow-hidden"
@@ -132,9 +131,7 @@
             </div>
         </div>
     </section>
-    {{-- ============================================ --}}
-    {{-- SECTION 2: LAYANAN PUBLIK DIGITAL --}}
-    {{-- ============================================ --}}
+    -- SECTION 2: LAYANAN PUBLIK DIGITAL --
     @if ($layanan->isNotEmpty())
         <section id="layanan" class="bg-white py-12 lg:py-16">
             <div class="max-w-[1440px] mx-auto px-6 lg:px-[102px]">
@@ -149,7 +146,7 @@
                     <p class="text-[16px] font-normal text-[#6b7280] leading-[28px] mt-1">Akses semua kebutuhan administrasi desa dalam satu genggaman</p>
                 </div>
 
-                {{-- Grid Layanan DINAMIS dari database --}}
+                -- Grid Layanan DINAMIS dari database --
                 <div
                     class="grid grid-cols-2 justify-items-center gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-x-5 lg:gap-y-7"
                 >
@@ -184,9 +181,7 @@
             </div>
         </section>
     @endif
-    {{-- ============================================ --}}
-    {{-- SECTION 3: PANDUAN PENGGUNAAN --}}
-    {{-- ============================================ --}}
+    -- SECTION 3: PANDUAN PENGGUNAAN --
     <section id="panduan" class="bg-white py-12 lg:py-16">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-[115px]">
             {{-- Section Header --}}
@@ -296,9 +291,7 @@
             </div>
         </div>
     </section>
-    {{-- ============================================ --}}
-    {{-- SECTION 4: LAYANAN PENGADUAN WARGA --}}
-    {{-- ============================================ --}}
+    -- SECTION 4: LAYANAN PENGADUAN WARGA --
     <section id="aduan" class="bg-white py-12 lg:py-16">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-20">
             <div
@@ -531,9 +524,7 @@
             </div>
         </div>
     </section>
-    {{-- ============================================ --}}
-    {{-- SECTION 5: CTA KENDALA --}}
-    {{-- ============================================ --}}
+    -- SECTION 5: CTA KENDALA --
     <section class="py-10 lg:py-14 bg-white">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-[157px]">
             <div
@@ -548,7 +539,7 @@
                     <p class="text-[16px] font-medium opacity-90 leading-normal">Tim pelayanan desa siap membantu Anda menyelesaikan kendala administrasi dengan cepat dan tepat.</p>
                 </div>
                 <a
-                    href="https://wa.me/628xxxxxxxxxx"
+                    href="https://wa.me/6281329164778?text=Halo%2C%20saya%20ingin%20bertanya."
                     target="_blank"
                     class="bg-white text-[#111827] font-extrabold text-[16px] px-[40px] py-[20px] rounded-[24px] flex items-center gap-3 hover:bg-gray-100 transition shrink-0"
                 >

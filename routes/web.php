@@ -175,6 +175,10 @@ Route::middleware(["auth", "role:admin"])
             AdminPengajuanController::class,
             "approve",
         ])->name("pengajuan.approve");
+        Route::patch("/pengajuan/{permohonan}/complete", [
+            AdminPengajuanController::class,
+            "complete",
+        ])->name("pengajuan.complete");
         Route::patch("/pengajuan/{permohonan}/reject", [
             AdminPengajuanController::class,
             "reject",
@@ -373,4 +377,8 @@ Route::middleware(["auth", "role:warga"])
         ])->name("profil.update");
     });
 
+Route::middleware("auth")->get("/pengajuan/{permohonan}/dokumen-hasil", [
+    AdminPengajuanController::class,
+    "downloadDokumen",
+])->name("pengajuan.dokumen.download");
 
