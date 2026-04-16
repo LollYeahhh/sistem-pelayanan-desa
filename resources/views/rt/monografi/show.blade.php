@@ -3,6 +3,11 @@
 
 @php
     $fieldValues = collect($values ?? []);
+    $submissionStatus = $submission?->status ?? "draft";
+    $statusLabel = $submissionStatus === "submitted" ? "Sudah Dikirim" : "Draft";
+    $statusClass = $submissionStatus === "submitted"
+        ? "bg-green-50 text-green-600 border-green-100"
+        : "bg-amber-50 text-amber-600 border-amber-100";
 @endphp
 
 @section ("content")
@@ -32,6 +37,37 @@
                     </select>
                 </div>
             @endif
+        </div>
+
+        <div class="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+            <div class="rounded-[24px] border border-gray-100 bg-white px-6 py-5 shadow-[0_18px_34px_-30px_rgba(17,24,39,0.45)]">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#A3AEC2]">Wilayah Aktif</p>
+                        <h2 class="mt-2 text-xl font-extrabold text-[#111827]">{{ $wilayahLabel ?? ($selectedRt->rt_label ?? '-') }}</h2>
+                        <p class="mt-1 text-sm text-[#64748B]">Pengisian untuk tahun {{ $tahun }}</p>
+                    </div>
+                    <span class="inline-flex rounded-full border px-3 py-1 text-xs font-bold {{ $statusClass }}">
+                        {{ $statusLabel }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="rounded-[24px] border border-gray-100 bg-white px-6 py-5 shadow-[0_18px_34px_-30px_rgba(17,24,39,0.45)]">
+                <p class="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#A3AEC2]">Status Pengisian</p>
+                <p class="mt-2 text-sm text-[#475569]">
+                    @if ($submissionStatus === "submitted")
+                        Data monografi sudah dikirim. Form dikunci sampai admin mengembalikannya ke draft.
+                    @else
+                        Data masih dalam status draft. Anda bisa menyimpan bertahap lalu kirim final setelah semua field terisi.
+                    @endif
+                </p>
+                @error ("submit")
+                    <p class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
         </div>
 
         @if (! $currentCategory)
@@ -70,7 +106,7 @@
                                 {{ $currentCategory->kode }}. {{ $currentCategory->nama_kategori }}
                             </h2>
                             <p class="text-sm text-[#64748B]">
-                                {{ $selectedRt->rt_label }} - Tahun {{ $tahun }}
+                                {{ $wilayahLabel ?? $selectedRt->rt_label }} - Tahun {{ $tahun }}
                             </p>
                         </div>
                     </div>
@@ -124,7 +160,8 @@
                                             name="{{ $fieldName }}"
                                             rows="4"
                                             placeholder="Masukkan {{ strtolower($field->label) }}"
-                                            class="w-full rounded-[14px] bg-[#F8FAFC] px-5 py-4 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20"
+                                            @disabled($isReadOnly)
+                                            class="w-full rounded-[14px] bg-[#F8FAFC] px-5 py-4 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                                         >{{ $fieldValue }}</textarea>
                                     @elseif ($field->tipe_input === 'date')
                                         <input
@@ -132,7 +169,8 @@
                                             name="{{ $fieldName }}"
                                             type="date"
                                             value="{{ $fieldValue }}"
-                                            class="h-[57px] w-full rounded-[14px] bg-[#F8FAFC] px-5 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20"
+                                            @disabled($isReadOnly)
+                                            class="h-[57px] w-full rounded-[14px] bg-[#F8FAFC] px-5 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                                         />
                                     @else
                                         <input
@@ -141,7 +179,8 @@
                                             type="{{ $field->tipe_input === 'number' ? 'number' : 'text' }}"
                                             value="{{ $fieldValue }}"
                                             placeholder="Masukkan {{ strtolower($field->tipe_input === 'number' ? 'jumlah' : $field->label) }}"
-                                            class="h-[57px] w-full rounded-[14px] bg-[#F8FAFC] px-5 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20"
+                                            @disabled($isReadOnly)
+                                            class="h-[57px] w-full rounded-[14px] bg-[#F8FAFC] px-5 text-sm text-[#111827] placeholder-[#B3BDC9] outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                                         />
                                     @endif
 
@@ -155,36 +194,50 @@
                         </div>
 
                         <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div class="flex gap-3">
+                            <div class="flex flex-wrap gap-3">
                                 @if ($previousCategory)
-                                    <button
-                                        type="submit"
-                                        name="action"
-                                        value="previous"
+                                    <a
+                                        href="{{ route('rt.monografi.show', ['category' => $previousCategory, 'rt' => $selectedRt->id]) }}"
                                         class="inline-flex h-[50px] items-center rounded-[11px] border border-[#D7E3F8] bg-white px-5 text-sm font-semibold text-[#64748B] transition hover:border-primary/30 hover:text-primary"
                                     >
                                         Sebelumnya
-                                    </button>
+                                    </a>
                                 @endif
 
-                                <button
-                                    type="submit"
-                                    name="action"
-                                    value="save"
-                                    class="inline-flex h-[50px] items-center rounded-[11px] border border-[#D7E3F8] bg-white px-5 text-sm font-semibold text-primary transition hover:border-primary/30 hover:bg-[#F8FBFF]"
-                                >
-                                    Simpan Draft
-                                </button>
+                                @unless ($isReadOnly)
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="save"
+                                        class="inline-flex h-[50px] items-center rounded-[11px] border border-[#D7E3F8] bg-white px-5 text-sm font-semibold text-primary transition hover:border-primary/30 hover:bg-[#F8FBFF]"
+                                    >
+                                        Simpan Draft
+                                    </button>
+                                @endunless
                             </div>
 
-                            <button
-                                type="submit"
-                                name="action"
-                                value="next"
-                                class="inline-flex h-[50px] items-center rounded-[11px] bg-primary px-6 text-sm font-semibold text-white shadow-[0_12px_30px_-18px_rgba(37,99,235,0.9)] transition hover:bg-primary-hover"
-                            >
-                                {{ $nextCategory ? 'Selanjutnya' : 'Simpan' }}
-                            </button>
+                            <div class="flex flex-wrap gap-3">
+                                @if ($nextCategory)
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="save_and_next"
+                                        @disabled($isReadOnly)
+                                        class="inline-flex h-[50px] items-center rounded-[11px] bg-primary px-6 text-sm font-semibold text-white shadow-[0_12px_30px_-18px_rgba(37,99,235,0.9)] transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                                    >
+                                        Simpan &amp; Lanjutkan
+                                    </button>
+                                @elseif (! $isReadOnly)
+                                    <button
+                                        type="submit"
+                                        name="action"
+                                        value="submit"
+                                        class="inline-flex h-[50px] items-center rounded-[11px] bg-emerald-600 px-6 text-sm font-semibold text-white shadow-[0_12px_30px_-18px_rgba(5,150,105,0.9)] transition hover:bg-emerald-700"
+                                    >
+                                        Kirim Data
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     @endif
                 </form>
@@ -192,6 +245,3 @@
         @endif
     </div>
 @endsection
-
-
-

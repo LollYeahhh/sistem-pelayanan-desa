@@ -212,6 +212,18 @@ Route::middleware(["auth", "role:admin"])
             AdminMonografiController::class,
             "index",
         ])->name("monografi.index");
+        Route::get("/monografi/{rtUser}/detail", [
+            AdminMonografiController::class,
+            "show",
+        ])->name("monografi.show");
+        Route::patch("/monografi/{rtUser}/reopen", [
+            AdminMonografiController::class,
+            "reopen",
+        ])->name("monografi.reopen");
+        Route::get("/monografi/export", [
+            AdminMonografiController::class,
+            "export",
+        ])->name("monografi.export");
         Route::get("/monografi/form-builder", [
             AdminMonografiFormBuilderController::class,
             "show",
@@ -381,4 +393,3 @@ Route::middleware("auth")->get("/pengajuan/{permohonan}/dokumen-hasil", [
     AdminPengajuanController::class,
     "downloadDokumen",
 ])->name("pengajuan.dokumen.download");
-

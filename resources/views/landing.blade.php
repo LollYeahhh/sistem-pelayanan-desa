@@ -1,8 +1,7 @@
 @extends ("layouts.guest")
 @section ("title", "Pelayanan Desa Dukuhtengah")
 @section ("content")
-
-    -- SECTION 1: HERO --
+    {{-- SECTION 1: HERO --}}
     <section
         id="beranda"
         class="relative bg-gradient-to-b from-[#d8e7ff] from-[6%] via-[#ddeaff] via-[40%] to-white overflow-hidden"
@@ -131,7 +130,7 @@
             </div>
         </div>
     </section>
-    -- SECTION 2: LAYANAN PUBLIK DIGITAL --
+    {{-- SECTION 2: LAYANAN PUBLIK DIGITAL --}}
     @if ($layanan->isNotEmpty())
         <section id="layanan" class="bg-white py-12 lg:py-16">
             <div class="max-w-[1440px] mx-auto px-6 lg:px-[102px]">
@@ -181,7 +180,7 @@
             </div>
         </section>
     @endif
-    -- SECTION 3: PANDUAN PENGGUNAAN --
+    {{-- SECTION 3: PANDUAN PENGGUNAAN --}}
     <section id="panduan" class="bg-white py-12 lg:py-16">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-[115px]">
             {{-- Section Header --}}
@@ -291,7 +290,7 @@
             </div>
         </div>
     </section>
-    -- SECTION 4: LAYANAN PENGADUAN WARGA --
+    {{-- SECTION 4: LAYANAN PENGADUAN WARGA --}}
     <section id="aduan" class="bg-white py-12 lg:py-16">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-20">
             <div
@@ -524,7 +523,7 @@
             </div>
         </div>
     </section>
-    -- SECTION 5: CTA KENDALA --
+    {{-- SECTION 5: CTA KENDALA --}}
     <section class="py-10 lg:py-14 bg-white">
         <div class="max-w-[1440px] mx-auto px-6 lg:px-[157px]">
             <div
