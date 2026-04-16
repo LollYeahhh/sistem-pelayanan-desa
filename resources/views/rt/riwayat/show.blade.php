@@ -84,6 +84,43 @@
             </div>
         @endif
 
+        @if ($permohonan->status === 'selesai' && $permohonan->file_dokumen_path)
+            <div class="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Dokumen Hasil</p>
+                        <p class="mt-1 text-sm font-semibold text-emerald-900">
+                            {{ $permohonan->file_dokumen_nama ?: 'Dokumen hasil tersedia untuk diunduh' }}
+                        </p>
+                        <p class="mt-1 text-sm text-emerald-800">
+                            {{ optional($permohonan->dokumen_selesai_at)->translatedFormat("d M Y, H:i") ?? optional($permohonan->reviewed_at)->translatedFormat("d M Y, H:i") ?? "-" }} WIB
+                        </p>
+                    </div>
+                    <a
+                        href="{{ route('pengajuan.dokumen.download', $permohonan) }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15" />
+                        </svg>
+                        Download Dokumen
+                    </a>
+                </div>
+
+                @if ($permohonan->catatan_admin)
+                    <div class="mt-4 rounded-xl border border-emerald-200 bg-white/70 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Catatan Admin</p>
+                        <p class="mt-1 whitespace-pre-line text-sm text-emerald-900">{{ $permohonan->catatan_admin }}</p>
+                    </div>
+                @endif
+            </div>
+        @elseif ($permohonan->catatan_admin)
+            <div class="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-700">Catatan Admin</p>
+                <p class="text-sm text-blue-900 whitespace-pre-line">{{ $permohonan->catatan_admin }}</p>
+            </div>
+        @endif
+
         @if ($permohonan->status === 'ditolak')
             <div class="mt-4">
                 @if ($permohonan->layanan?->is_active)

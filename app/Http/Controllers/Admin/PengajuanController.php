@@ -94,8 +94,15 @@ class PengajuanController extends Controller
     {
         $permohonan->loadMissing(["user", "layanan"]);
 
+        if (!in_array($permohonan->status, ["menunggu", "diproses"], true)) {
+            return redirect()
+                ->route("admin.pengajuan.show", $permohonan)
+                ->with("error", "Pengajuan ini tidak dapat disetujui pada status saat ini.");
+        }
+
         $permohonan->update([
             "status" => "disetujui",
+            "alasan_penolakan" => null,
             "reviewed_by" => auth()->id(),
             "reviewed_at" => now(),
         ]);
@@ -122,14 +129,75 @@ class PengajuanController extends Controller
             ->with("success", "Pengajuan berhasil disetujui.");
     }
 
+    public function complete(Request $request, PermohonanSurat $permohonan)
+    {
+        $permohonan->loadMissing(["user", "layanan"]);
+
+        if ($permohonan->status !== "disetujui") {
+            return redirect()
+                ->route("admin.pengajuan.show", $permohonan)
+                ->with("error", "Dokumen hasil hanya dapat diunggah setelah pengajuan disetujui.");
+        }
+
+        $validated = $request->validate([
+            "file_dokumen" => "required|file|mimes:pdf,doc,docx|max:5120",
+            "catatan_admin" => "nullable|string|max:1000",
+        ]);
+
+        $file = $request->file("file_dokumen");
+        $path = $file->store("dokumen-hasil/" . $permohonan->id, "local");
+
+        $permohonan->update([
+            "status" => "selesai",
+            "file_dokumen_path" => $path,
+            "file_dokumen_nama" => $file->getClientOriginalName(),
+            "file_dokumen_mime" => $file->getClientMimeType(),
+            "catatan_admin" => $validated["catatan_admin"] ?? null,
+            "alasan_penolakan" => null,
+            "reviewed_by" => auth()->id(),
+            "reviewed_at" => now(),
+            "dokumen_selesai_at" => now(),
+        ]);
+
+        $this->dispatchDatabaseNotification(
+            $permohonan->user,
+            [
+                "kind" => "status_selesai",
+                "title" => "Dokumen selesai diproses",
+                "message" => sprintf(
+                    "%s untuk %s telah selesai dan dokumen hasil dapat diunduh.",
+                    $permohonan->no_registrasi ?: "Pengajuan #" . $permohonan->id,
+                    $permohonan->layanan->nama_layanan ?? "layanan",
+                ),
+                "url" => $this->resolveHistoryRoute($permohonan),
+            ],
+            "App\\Notifications\\PengajuanStatusUpdatedNotification",
+        );
+
+        return redirect()
+            ->route("admin.pengajuan.show", $permohonan)
+            ->with("success", "Dokumen hasil berhasil diunggah dan pengajuan ditandai selesai.");
+    }
+
     public function reject(Request $request, PermohonanSurat $permohonan)
     {
         $request->validate(["alasan_tolak" => "required|string|max:500"]);
         $permohonan->loadMissing(["user", "layanan"]);
 
+        if (!in_array($permohonan->status, ["menunggu", "diproses", "disetujui"], true)) {
+            return redirect()
+                ->route("admin.pengajuan.show", $permohonan)
+                ->with("error", "Pengajuan ini tidak dapat ditolak pada status saat ini.");
+        }
+
         $permohonan->update([
             "status" => "ditolak",
             "alasan_penolakan" => $request->alasan_tolak,
+            "catatan_admin" => null,
+            "file_dokumen_path" => null,
+            "file_dokumen_nama" => null,
+            "file_dokumen_mime" => null,
+            "dokumen_selesai_at" => null,
             "reviewed_by" => auth()->id(),
             "reviewed_at" => now(),
         ]);
@@ -147,9 +215,7 @@ class PengajuanController extends Controller
                 "kind" => "status_ditolak",
                 "title" => "Pengajuan ditolak",
                 "message" => $message,
-                "url" => $permohonan->user->role === "rt"
-                    ? route("rt.riwayat.show", $permohonan)
-                    : route("warga.riwayat.show", $permohonan),
+                "url" => $this->resolveHistoryRoute($permohonan),
             ],
             "App\\Notifications\\PengajuanStatusUpdatedNotification",
         );
@@ -157,6 +223,38 @@ class PengajuanController extends Controller
         return redirect()
             ->route("admin.pengajuan.show", $permohonan)
             ->with("success", "Pengajuan telah ditolak.");
+    }
+
+    public function downloadDokumen(PermohonanSurat $permohonan)
+    {
+        $user = auth()->user();
+
+        if (!$user || ($user->id !== $permohonan->user_id && !$user->isAdmin())) {
+            abort(403);
+        }
+
+        if (
+            !$permohonan->file_dokumen_path ||
+            !Storage::disk("local")->exists($permohonan->file_dokumen_path)
+        ) {
+            abort(404, "Dokumen tidak ditemukan.");
+        }
+
+        $downloadName = $permohonan->file_dokumen_nama;
+
+        if (!$downloadName) {
+            $extension = pathinfo($permohonan->file_dokumen_path, PATHINFO_EXTENSION);
+            $downloadName = ($permohonan->no_registrasi ?: "permohonan-" . $permohonan->id)
+                . ($extension ? "." . $extension : "");
+        }
+
+        return Storage::disk("local")->download(
+            $permohonan->file_dokumen_path,
+            $downloadName,
+            [
+                "Content-Type" => $permohonan->file_dokumen_mime ?: "application/octet-stream",
+            ],
+        );
     }
 
     protected function resolveLampiranFile(PermohonanSurat $permohonan, LayananField $field): array
@@ -275,5 +373,11 @@ class PengajuanController extends Controller
 
         return $displaySections;
     }
-}
 
+    protected function resolveHistoryRoute(PermohonanSurat $permohonan): string
+    {
+        return $permohonan->user->role === "rt"
+            ? route("rt.riwayat.show", $permohonan)
+            : route("warga.riwayat.show", $permohonan);
+    }
+}

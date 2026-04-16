@@ -17,9 +17,7 @@ use App\Http\Controllers\RT\RTController;
 use App\Models\Layanan;
 use Illuminate\Support\Facades\Route;
 
-// ==========================================
 // LANDING PAGE
-// ==========================================
 Route::get("/", function () {
     $layanan = Layanan::where("is_active", true)
         ->orderBy("id")
@@ -31,9 +29,7 @@ Route::post("/aduan", [AduanMasyarakatController::class, "store"])->name(
     "aduan.store",
 );
 
-// ==========================================
 // AUTH
-// ==========================================
 Route::middleware("guest")->group(function () {
     Route::get("/login", [AuthController::class, "showLogin"])->name("login");
     Route::post("/login", [AuthController::class, "login"]);
@@ -47,9 +43,7 @@ Route::post("/logout", [AuthController::class, "logout"])
     ->middleware("auth")
     ->name("logout");
 
-// ==========================================
 // ADMIN
-// ==========================================
 Route::middleware(["auth", "role:admin"])
     ->prefix("admin")
     ->name("admin.")
@@ -175,12 +169,20 @@ Route::middleware(["auth", "role:admin"])
             AdminPengajuanController::class,
             "approve",
         ])->name("pengajuan.approve");
+        Route::patch("/pengajuan/{permohonan}/complete", [
+            AdminPengajuanController::class,
+            "complete",
+        ])->name("pengajuan.complete");
         Route::patch("/pengajuan/{permohonan}/reject", [
             AdminPengajuanController::class,
             "reject",
         ])->name("pengajuan.reject");
 
         // Arsip Dokumen
+        Route::get("/arsip/export", [
+            AdminArsipController::class,
+            "export",
+        ])->name("arsip.export");
         Route::get("/arsip", [AdminArsipController::class, "index"])->name(
             "arsip.index",
         );
@@ -208,6 +210,18 @@ Route::middleware(["auth", "role:admin"])
             AdminMonografiController::class,
             "index",
         ])->name("monografi.index");
+        Route::get("/monografi/{rtUser}/detail", [
+            AdminMonografiController::class,
+            "show",
+        ])->name("monografi.show");
+        Route::patch("/monografi/{rtUser}/reopen", [
+            AdminMonografiController::class,
+            "reopen",
+        ])->name("monografi.reopen");
+        Route::get("/monografi/export", [
+            AdminMonografiController::class,
+            "export",
+        ])->name("monografi.export");
         Route::get("/monografi/form-builder", [
             AdminMonografiFormBuilderController::class,
             "show",
@@ -238,9 +252,7 @@ Route::middleware(["auth", "role:admin"])
         ])->name("monografi.fields.destroy");
     });
 
-// ==========================================
 // RT
-// ==========================================
 Route::middleware(["auth", "role:rt"])
     ->prefix("rt")
     ->name("rt.")
@@ -268,6 +280,14 @@ Route::middleware(["auth", "role:rt"])
         Route::get("/monografi", [RTMonografiController::class, "index"])->name(
             "monografi.index",
         );
+        Route::get("/monografi/start", [
+            RTMonografiController::class,
+            "start",
+        ])->name("monografi.start");
+        Route::get("/monografi/riwayat/{tahun}", [
+            RTMonografiController::class,
+            "history",
+        ])->name("monografi.history");
         Route::get("/monografi/{category}", [
             RTMonografiController::class,
             "show",
@@ -305,9 +325,7 @@ Route::middleware(["auth", "role:rt"])
         );
     });
 
-// ==========================================
 // WARGA
-// ==========================================
 Route::middleware(["auth", "role:warga"])
     ->prefix("warga")
     ->name("warga.")
@@ -373,4 +391,9 @@ Route::middleware(["auth", "role:warga"])
         ])->name("profil.update");
     });
 
-
+Route::middleware("auth")
+    ->get("/pengajuan/{permohonan}/dokumen-hasil", [
+        AdminPengajuanController::class,
+        "downloadDokumen",
+    ])
+    ->name("pengajuan.dokumen.download");
