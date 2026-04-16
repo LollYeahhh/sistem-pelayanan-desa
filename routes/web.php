@@ -284,6 +284,14 @@ Route::middleware(["auth", "role:rt"])
         Route::get("/monografi", [RTMonografiController::class, "index"])->name(
             "monografi.index",
         );
+        Route::get("/monografi/start", [
+            RTMonografiController::class,
+            "start",
+        ])->name("monografi.start");
+        Route::get("/monografi/riwayat/{tahun}", [
+            RTMonografiController::class,
+            "history",
+        ])->name("monografi.history");
         Route::get("/monografi/{category}", [
             RTMonografiController::class,
             "show",

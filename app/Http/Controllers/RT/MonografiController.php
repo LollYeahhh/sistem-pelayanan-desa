@@ -18,36 +18,113 @@ class MonografiController extends Controller
         Request $request,
         MonografiWilayahResolver $wilayahResolver,
     ) {
-        $category = MonografiCategory::orderBy("urutan")->first();
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahunAktif = $this->currentYear();
+        $historyEntries = $this->buildHistoryEntries(
+            $selectedRt,
+            $tahunAktif,
+            $wilayahLabel,
+        );
+        $currentEntry = $historyEntries->firstWhere("tahun", $tahunAktif);
+        $primaryAction = $this->resolvePrimaryAction($currentEntry);
 
-        if (!$category) {
-            [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
-                $request,
-                $wilayahResolver,
-            );
-            $tahun = $this->currentYear();
+        return view("rt.monografi.index", compact(
+            "rtOptions",
+            "selectedRt",
+            "categories",
+            "wilayahLabel",
+            "tahunAktif",
+            "historyEntries",
+            "currentEntry",
+            "primaryAction",
+        ));
+    }
 
-            return view("rt.monografi.show", [
-                "categories" => $categories,
-                "currentCategory" => null,
-                "fields" => collect(),
-                "values" => collect(),
-                "rtOptions" => $rtOptions,
-                "selectedRt" => $selectedRt,
-                "previousCategory" => null,
-                "nextCategory" => null,
-                "tahun" => $tahun,
-                "submission" => $this->resolveSubmission(
-                    $selectedRt,
-                    $tahun,
-                    $wilayahLabel,
-                ),
-                "wilayahLabel" => $wilayahLabel,
-                "isReadOnly" => false,
-            ]);
+    public function start(
+        Request $request,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahun = $this->currentYear();
+        $submission = $this->resolveSubmission(
+            $selectedRt,
+            $tahun,
+            $wilayahLabel,
+        );
+
+        if ($submission->status === "submitted") {
+            return redirect()
+                ->route("rt.monografi.history", [
+                    "tahun" => $tahun,
+                    "rt" => $selectedRt->id,
+                ])
+                ->with(
+                    "error",
+                    "Data monografi tahun {$tahun} sudah dikirim dan hanya bisa dilihat.",
+                );
         }
 
-        return $this->renderCategory($request, $category, $wilayahResolver);
+        $firstCategory = $categories->first();
+
+        if (!$firstCategory) {
+            return redirect()
+                ->route("rt.monografi.index", ["rt" => $selectedRt->id])
+                ->with(
+                    "error",
+                    "Kategori monografi belum tersedia. Hubungi admin untuk menyiapkannya.",
+                );
+        }
+
+        return redirect()->route("rt.monografi.show", [
+            "category" => $firstCategory,
+            "rt" => $selectedRt->id,
+        ]);
+    }
+
+    public function history(
+        Request $request,
+        int $tahun,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+
+        $values = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->pluck("value", "field_id");
+
+        $submission = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->first();
+
+        if (!$submission && $values->isEmpty()) {
+            abort(404, "Riwayat monografi tidak ditemukan.");
+        }
+
+        $status = $submission?->status ?? "draft";
+        $filledCount = $values->filter(fn($value) => filled($value))->count();
+
+        return view("rt.monografi.detail", compact(
+            "rtOptions",
+            "selectedRt",
+            "categories",
+            "tahun",
+            "submission",
+            "wilayahLabel",
+            "values",
+            "status",
+            "filledCount",
+        ));
     }
 
     public function show(
@@ -55,6 +132,29 @@ class MonografiController extends Controller
         MonografiCategory $category,
         MonografiWilayahResolver $wilayahResolver,
     ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahun = $this->currentYear();
+        $submission = $this->resolveSubmission(
+            $selectedRt,
+            $tahun,
+            $wilayahLabel,
+        );
+
+        if ($submission->status === "submitted") {
+            return redirect()
+                ->route("rt.monografi.history", [
+                    "tahun" => $tahun,
+                    "rt" => $selectedRt->id,
+                ])
+                ->with(
+                    "error",
+                    "Data monografi tahun {$tahun} sudah dikirim dan hanya bisa dilihat.",
+                );
+        }
+
         return $this->renderCategory($request, $category, $wilayahResolver);
     }
 
@@ -326,9 +426,81 @@ class MonografiController extends Controller
         return new MonografiSubmission([
             "rt_user_id" => $selectedRt->id,
             "tahun" => $tahun,
-            "status" => $hasData ? "draft" : "draft",
+            "status" => "draft",
             "wilayah_label" => $wilayahLabel,
         ]);
+    }
+
+    protected function buildHistoryEntries(
+        User $selectedRt,
+        int $tahunAktif,
+        string $wilayahLabel,
+    ) {
+        $submissions = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->orderByDesc("tahun")
+            ->get()
+            ->keyBy("tahun");
+
+        $legacyYears = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->distinct()
+            ->pluck("tahun")
+            ->map(fn($tahun) => (int) $tahun);
+
+        return $legacyYears
+            ->merge($submissions->keys()->map(fn($tahun) => (int) $tahun))
+            ->push($tahunAktif)
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->map(function (int $tahun) use (
+                $selectedRt,
+                $wilayahLabel,
+                $tahunAktif,
+                $submissions,
+            ) {
+                $submission = $submissions->get($tahun);
+                $status = $submission?->status ?? "draft";
+                $hasData =
+                    $submission !== null ||
+                    MonografiData::query()
+                        ->where("rt_user_id", $selectedRt->id)
+                        ->where("tahun", $tahun)
+                        ->exists();
+
+                return (object) [
+                    "tahun" => $tahun,
+                    "status" => $hasData ? $status : "kosong",
+                    "wilayah_label" => $submission?->wilayah_label ?? $wilayahLabel,
+                    "last_saved_at" => $submission?->last_saved_at,
+                    "submitted_at" => $submission?->submitted_at,
+                    "is_current_year" => $tahun === $tahunAktif,
+                    "has_data" => $hasData,
+                ];
+            });
+    }
+
+    protected function resolvePrimaryAction(?object $entry): array
+    {
+        if (!$entry || !$entry->has_data || $entry->status === "kosong") {
+            return [
+                "label" => "Isi Data Monografi",
+                "kind" => "start",
+            ];
+        }
+
+        if ($entry->status === "draft") {
+            return [
+                "label" => "Lanjutkan Monografi",
+                "kind" => "continue",
+            ];
+        }
+
+        return [
+            "label" => "Lihat Monografi",
+            "kind" => "view",
+        ];
     }
 
     protected function currentYear(): int

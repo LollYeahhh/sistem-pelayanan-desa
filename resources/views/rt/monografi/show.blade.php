@@ -13,9 +13,23 @@
 @section ("content")
     <div class="space-y-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 class="text-[28px] font-extrabold leading-9 text-[#111827]">
-                Data Monografi RT
-            </h1>
+            <div>
+                <a
+                    href="{{ route('rt.monografi.index', ['rt' => $selectedRt->id]) }}"
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary-hover"
+                >
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    Kembali ke riwayat monografi
+                </a>
+                <h1 class="mt-3 text-[28px] font-extrabold leading-9 text-[#111827]">
+                    Isi Data Monografi RT
+                </h1>
+                <p class="mt-2 text-sm text-[#64748B]">
+                    Lengkapi data monografi tahun {{ $tahun }} secara bertahap per kategori.
+                </p>
+            </div>
 
             @if ($rtOptions->isNotEmpty())
                 <div class="space-y-2">

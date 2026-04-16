@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MonografiCategory;
 use App\Models\MonografiField;
+use App\Models\MonografiData;
 use App\Models\MonografiSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,6 +191,102 @@ class MonografiWorkflowTest extends TestCase
             ->assertOk()
             ->assertSee("Draft")
             ->assertSee("RT 01");
+    }
+
+    public function test_rt_index_shows_history_landing_and_start_action(): void
+    {
+        $rt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT 02",
+            "rt_rw" => "02/01",
+        ]);
+
+        $this->actingAs($rt)
+            ->get(route("rt.monografi.index", ["rt" => $rt->id]))
+            ->assertOk()
+            ->assertSee("Riwayat Pengisian Monografi")
+            ->assertSee("Isi Data Monografi Tahun " . now("Asia/Jakarta")->format("Y"));
+    }
+
+    public function test_rt_index_shows_continue_action_for_current_year_draft(): void
+    {
+        $rt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT 03",
+            "rt_rw" => null,
+        ]);
+
+        [$categoryA, $fieldA] = $this->createCategory("A", "Potensi SDM", 1, [
+            ["label" => "Jumlah Penduduk Laki-laki", "tipe_input" => "number"],
+        ]);
+
+        $this->actingAs($rt)
+            ->put(route("rt.monografi.update", ["category" => $categoryA, "rt" => $rt->id]), [
+                "field_{$fieldA->id}" => 18,
+                "action" => "save",
+            ]);
+
+        $this->actingAs($rt)
+            ->get(route("rt.monografi.index", ["rt" => $rt->id]))
+            ->assertOk()
+            ->assertSee("Lanjutkan Monografi Tahun " . now("Asia/Jakarta")->format("Y"))
+            ->assertSee("Lanjutkan Isi");
+    }
+
+    public function test_submitted_current_year_redirects_rt_to_read_only_history_detail(): void
+    {
+        $rt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT 04",
+            "rt_rw" => null,
+        ]);
+
+        [$categoryA, $fieldA] = $this->createCategory("A", "Potensi SDM", 1, [
+            ["label" => "Jumlah Penduduk Laki-laki", "tipe_input" => "number"],
+        ]);
+
+        $year = (int) now("Asia/Jakarta")->format("Y");
+
+        $this->actingAs($rt)
+            ->put(route("rt.monografi.update", ["category" => $categoryA, "rt" => $rt->id]), [
+                "field_{$fieldA->id}" => 27,
+                "action" => "submit",
+            ]);
+
+        $this->actingAs($rt)
+            ->get(route("rt.monografi.start", ["rt" => $rt->id]))
+            ->assertRedirect(route("rt.monografi.history", ["tahun" => $year, "rt" => $rt->id]));
+
+        $this->actingAs($rt)
+            ->get(route("rt.monografi.history", ["tahun" => $year, "rt" => $rt->id]))
+            ->assertOk()
+            ->assertSee("Detail Monografi Tahun {$year}")
+            ->assertSee("Jumlah Penduduk Laki-laki")
+            ->assertSee("27");
+    }
+
+    public function test_legacy_monografi_year_without_submission_appears_in_rt_history(): void
+    {
+        $rt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT 05",
+            "rt_rw" => null,
+        ]);
+
+        [$categoryA, $fieldA] = $this->createCategory("A", "Potensi SDM", 1, [
+            ["label" => "Jumlah Penduduk Laki-laki", "tipe_input" => "number"],
+        ]);
+
+        $legacyYear = (int) now("Asia/Jakarta")->copy()->subYear()->format("Y");
+
+        MonografiData::create([
+            "field_id" => $fieldA->id,
+            "rt_user_id" => $rt->id,
+            "tahun" => $legacyYear,
+            "value" => "21",
+        ]);
+
+        $this->actingAs($rt)
+            ->get(route("rt.monografi.index", ["rt" => $rt->id]))
+            ->assertOk()
+            ->assertSee((string) $legacyYear)
+            ->assertSee("Lihat");
     }
 
     private function createCategory(string $kode, string $nama, int $urutan, array $fields): array
