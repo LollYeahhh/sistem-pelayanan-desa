@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(MonografiData::class, "rt_user_id");
     }
 
+    public function monografiSubmissions()
+    {
+        return $this->hasMany(MonografiSubmission::class, "rt_user_id");
+    }
+
     public static function getJenisKelaminOptions(): array
     {
         return self::JENIS_KELAMIN_OPTIONS;

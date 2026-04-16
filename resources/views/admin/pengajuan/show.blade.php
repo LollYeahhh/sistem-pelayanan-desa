@@ -7,6 +7,7 @@
             "menunggu" => "border-amber-200 bg-amber-50 text-amber-600",
             "diproses" => "border-blue-200 bg-blue-50 text-blue-600",
             "disetujui" => "border-emerald-200 bg-emerald-50 text-emerald-600",
+            "selesai" => "border-teal-200 bg-teal-50 text-teal-600",
             "ditolak" => "border-red-200 bg-red-50 text-red-500",
         ];
     @endphp
@@ -52,6 +53,27 @@
                         "success",
                     )
                 }}
+            </div>
+        @endif
+
+        @if (session("error"))
+            <div
+                class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+            >
+                {{ session("error") }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div
+                class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700"
+            >
+                <p class="font-semibold">Periksa kembali form yang dikirim.</p>
+                <ul class="mt-2 list-disc space-y-1 pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
@@ -147,7 +169,7 @@
             </div>
         @endif
 
-        @if ($permohonan->status === "ditolak" && $permohonan->catatan)
+        @if ($permohonan->status === "ditolak" && $permohonan->rejection_reason)
             <div
                 class="rounded-[28px] border border-red-200 bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
             >
@@ -155,7 +177,127 @@
                     class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4"
                 >
                     <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-500">Alasan Penolakan</p>
-                    <p class="mt-2 text-sm font-medium text-red-600">{{ $permohonan->catatan }}</p>
+                    <p class="mt-2 text-sm font-medium text-red-600">{{ $permohonan->rejection_reason }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if ($permohonan->status === "selesai" && $permohonan->file_dokumen_path)
+            <div
+                class="rounded-[28px] border border-emerald-200 bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+            >
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">Dokumen Hasil Final</p>
+                            <h2 class="mt-2 text-xl font-bold text-[#0F172A]">
+                                {{ $permohonan->file_dokumen_nama ?: "Dokumen hasil tersedia" }}
+                            </h2>
+                            <p class="mt-2 text-sm text-[#64748B]">
+                                Dokumen final diunggah
+                                {{ optional($permohonan->dokumen_selesai_at)->translatedFormat("d M Y, H:i") ?? optional($permohonan->reviewed_at)->translatedFormat("d M Y, H:i") ?? "-" }}
+                                WIB.
+                            </p>
+                        </div>
+
+                        @if ($permohonan->catatan_admin)
+                            <div class="rounded-2xl border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1D4ED8]">Catatan Admin</p>
+                                <p class="mt-2 whitespace-pre-line text-sm text-[#1E3A8A]">{{ $permohonan->catatan_admin }}</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <a
+                        href="{{ route('pengajuan.dokumen.download', $permohonan) }}"
+                        class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-20px_rgba(37,99,235,0.55)] transition hover:bg-primary-hover"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l4.5-4.5M12 15l-4.5-4.5M4.5 19.5h15" />
+                        </svg>
+                        Unduh Dokumen Hasil
+                    </a>
+                </div>
+            </div>
+        @endif
+
+        @if ($permohonan->status === "disetujui")
+            <div class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                <div
+                    class="rounded-[28px] border border-[#D8E2F1] bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+                >
+                    <div class="mb-5">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">Tahap 2</p>
+                        <h2 class="mt-2 text-xl font-bold text-[#0F172A]">Unggah Dokumen Hasil</h2>
+                        <p class="mt-2 text-sm text-[#64748B]">Pengajuan sudah divalidasi. Unggah dokumen final untuk menutup proses dan membuka akses unduh bagi pemohon.</p>
+                    </div>
+
+                    <form
+                        method="POST"
+                        action="{{ route('admin.pengajuan.complete', $permohonan) }}"
+                        enctype="multipart/form-data"
+                        class="space-y-5"
+                    >
+                        @csrf
+                        @method ("PATCH")
+                        <div>
+                            <label
+                                for="file_dokumen"
+                                class="mb-2 block text-sm font-semibold text-[#0F172A]"
+                            >File Dokumen Hasil</label>
+                            <input
+                                id="file_dokumen"
+                                type="file"
+                                name="file_dokumen"
+                                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                required
+                                class="block w-full rounded-2xl border border-[#D8E2F1] bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] file:mr-4 file:rounded-xl file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary"
+                            />
+                            <p class="mt-2 text-xs text-[#64748B]">Format yang didukung: PDF, DOC, DOCX. Maksimal 5 MB.</p>
+                        </div>
+
+                        <div>
+                            <label
+                                for="catatan_admin"
+                                class="mb-2 block text-sm font-semibold text-[#0F172A]"
+                            >Catatan Admin</label>
+                            <textarea
+                                id="catatan_admin"
+                                name="catatan_admin"
+                                rows="4"
+                                placeholder="Opsional. Tambahkan catatan singkat untuk pemohon, misalnya instruksi penggunaan atau keterangan penerbitan."
+                                class="w-full rounded-2xl border border-[#D8E2F1] bg-[#F8FAFC] px-4 py-3 text-sm text-[#0F172A] placeholder-[#94A3B8] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                            >{{ old("catatan_admin", $permohonan->catatan_admin) }}</textarea>
+                        </div>
+
+                        <div class="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+                            <p class="text-xs text-[#64748B]">Setelah diunggah, status pengajuan akan berubah menjadi selesai.</p>
+                            <button
+                                type="submit"
+                                class="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-20px_rgba(37,99,235,0.55)] transition hover:bg-primary-hover"
+                            >
+                                Simpan & Tandai Selesai
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div
+                    class="rounded-[28px] border border-red-200 bg-white p-5 shadow-[0_20px_60px_-36px_rgba(15,23,42,0.18)] lg:p-7"
+                >
+                    <div class="mb-5">
+                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-500">Aksi Alternatif</p>
+                        <h2 class="mt-2 text-xl font-bold text-[#0F172A]">Tolak Pengajuan</h2>
+                        <p class="mt-2 text-sm text-[#64748B]">Jika ditemukan masalah setelah tahap validasi, pengajuan masih bisa ditolak sebelum dokumen hasil diunggah.</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onclick="openRejectModal()"
+                        class="inline-flex w-full items-center justify-center rounded-2xl border border-red-200 bg-white px-6 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50"
+                    >
+                        Tolak Pengajuan
+                    </button>
                 </div>
             </div>
         @endif
@@ -179,7 +321,7 @@
                         type="submit"
                         class="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_40px_-20px_rgba(37,99,235,0.55)] transition hover:bg-primary-hover sm:w-auto"
                     >
-                        Dokumen Valid
+                        Setujui Pengajuan
                     </button>
                 </form>
             </div>

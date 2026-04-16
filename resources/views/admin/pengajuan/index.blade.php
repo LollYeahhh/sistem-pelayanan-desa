@@ -46,6 +46,7 @@
                                 'menunggu' => 'bg-amber-50 text-amber-600',
                                 'diproses' => 'bg-blue-50 text-blue-600',
                                 'disetujui' => 'bg-green-50 text-green-600',
+                                'selesai' => 'bg-emerald-50 text-emerald-600',
                                 'ditolak' => 'bg-red-50 text-red-500',
                             ];
                         @endphp

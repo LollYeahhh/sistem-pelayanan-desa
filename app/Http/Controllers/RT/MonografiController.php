@@ -5,62 +5,187 @@ namespace App\Http\Controllers\RT;
 use App\Http\Controllers\Controller;
 use App\Models\MonografiCategory;
 use App\Models\MonografiData;
+use App\Models\MonografiField;
+use App\Models\MonografiSubmission;
 use App\Models\User;
+use App\Support\MonografiWilayahResolver;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MonografiController extends Controller
 {
-    public function index(Request $request)
-    {
-        $category = MonografiCategory::orderBy("urutan")->first();
-
-        if (!$category) {
-            [$rtOptions, $selectedRt, $categories] = $this->resolveContext(
-                $request,
-            );
-
-            return view("rt.monografi.show", [
-                "categories" => $categories,
-                "currentCategory" => null,
-                "fields" => collect(),
-                "values" => collect(),
-                "rtOptions" => $rtOptions,
-                "selectedRt" => $selectedRt,
-                "previousCategory" => null,
-                "nextCategory" => null,
-                "tahun" => (int) now("Asia/Jakarta")->format("Y"),
-            ]);
-        }
-
-        return $this->renderCategory($request, $category);
-    }
-
-    public function show(Request $request, MonografiCategory $category)
-    {
-        return $this->renderCategory($request, $category);
-    }
-
-    public function update(Request $request, MonografiCategory $category)
-    {
-        [$rtOptions, $selectedRt, $categories] = $this->resolveContext(
+    public function index(
+        Request $request,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
             $request,
+            $wilayahResolver,
         );
-        $fields = $category->fields()->orderBy("urutan")->get();
-        $tahun = (int) now("Asia/Jakarta")->format("Y");
+        $tahunAktif = $this->currentYear();
+        $historyEntries = $this->buildHistoryEntries(
+            $selectedRt,
+            $tahunAktif,
+            $wilayahLabel,
+        );
+        $currentEntry = $historyEntries->firstWhere("tahun", $tahunAktif);
+        $primaryAction = $this->resolvePrimaryAction($currentEntry);
 
-        $rules = [];
+        return view("rt.monografi.index", compact(
+            "rtOptions",
+            "selectedRt",
+            "categories",
+            "wilayahLabel",
+            "tahunAktif",
+            "historyEntries",
+            "currentEntry",
+            "primaryAction",
+        ));
+    }
 
-        foreach ($fields as $field) {
-            $key = "field_" . $field->id;
+    public function start(
+        Request $request,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahun = $this->currentYear();
+        $submission = $this->resolveSubmission(
+            $selectedRt,
+            $tahun,
+            $wilayahLabel,
+        );
 
-            $rules[$key] = match ($field->tipe_input) {
-                "number" => ["nullable", "numeric"],
-                "date" => ["nullable", "date"],
-                default => ["nullable", "string"],
-            };
+        if ($submission->status === "submitted") {
+            return redirect()
+                ->route("rt.monografi.history", [
+                    "tahun" => $tahun,
+                    "rt" => $selectedRt->id,
+                ])
+                ->with(
+                    "error",
+                    "Data monografi tahun {$tahun} sudah dikirim dan hanya bisa dilihat.",
+                );
         }
 
-        $validated = $request->validate($rules);
+        $firstCategory = $categories->first();
+
+        if (!$firstCategory) {
+            return redirect()
+                ->route("rt.monografi.index", ["rt" => $selectedRt->id])
+                ->with(
+                    "error",
+                    "Kategori monografi belum tersedia. Hubungi admin untuk menyiapkannya.",
+                );
+        }
+
+        return redirect()->route("rt.monografi.show", [
+            "category" => $firstCategory,
+            "rt" => $selectedRt->id,
+        ]);
+    }
+
+    public function history(
+        Request $request,
+        int $tahun,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+
+        $values = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->pluck("value", "field_id");
+
+        $submission = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->first();
+
+        if (!$submission && $values->isEmpty()) {
+            abort(404, "Riwayat monografi tidak ditemukan.");
+        }
+
+        $status = $submission?->status ?? "draft";
+        $filledCount = $values->filter(fn($value) => filled($value))->count();
+
+        return view("rt.monografi.detail", compact(
+            "rtOptions",
+            "selectedRt",
+            "categories",
+            "tahun",
+            "submission",
+            "wilayahLabel",
+            "values",
+            "status",
+            "filledCount",
+        ));
+    }
+
+    public function show(
+        Request $request,
+        MonografiCategory $category,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahun = $this->currentYear();
+        $submission = $this->resolveSubmission(
+            $selectedRt,
+            $tahun,
+            $wilayahLabel,
+        );
+
+        if ($submission->status === "submitted") {
+            return redirect()
+                ->route("rt.monografi.history", [
+                    "tahun" => $tahun,
+                    "rt" => $selectedRt->id,
+                ])
+                ->with(
+                    "error",
+                    "Data monografi tahun {$tahun} sudah dikirim dan hanya bisa dilihat.",
+                );
+        }
+
+        return $this->renderCategory($request, $category, $wilayahResolver);
+    }
+
+    public function update(
+        Request $request,
+        MonografiCategory $category,
+        MonografiWilayahResolver $wilayahResolver,
+    ) {
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
+            $request,
+            $wilayahResolver,
+        );
+        $tahun = $this->currentYear();
+        $submission = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->first();
+
+        if ($submission?->status === "submitted") {
+            return redirect()
+                ->route("rt.monografi.show", [
+                    "category" => $category,
+                    "rt" => $selectedRt->id,
+                ])
+                ->withErrors([
+                    "submit" => "Data monografi sudah dikirim. Hubungi admin untuk membuka kembali draft.",
+                ]);
+        }
+
+        $fields = $category->fields()->orderBy("urutan")->orderBy("id")->get();
+        $validated = $this->validateFields($request, $fields);
 
         foreach ($fields as $field) {
             MonografiData::updateOrCreate(
@@ -89,20 +214,37 @@ class MonografiController extends Controller
                 ? $orderedCategories[$currentIndex + 1]
                 : null;
 
-        $targetCategory = match ($request->input("action")) {
-            "previous" => $previousCategory,
-            "next" => $nextCategory,
-            default => $category,
-        };
+        $action = $request->input("action", "save");
 
-        $message =
-            $request->input("action") === "next" && !$nextCategory
-                ? "Data monografi berhasil disimpan."
-                : "Data monografi kategori berhasil disimpan.";
+        if ($action === "submit") {
+            $this->ensureAllFieldsFilled($selectedRt, $tahun);
+            $this->storeSubmission(
+                $selectedRt,
+                $tahun,
+                $wilayahLabel,
+                "submitted",
+            );
+
+            return redirect()
+                ->route("rt.monografi.show", [
+                    "category" => $category,
+                    "rt" => $selectedRt->id,
+                ])
+                ->with("success", "Data monografi berhasil dikirim.");
+        }
+
+        $this->storeSubmission($selectedRt, $tahun, $wilayahLabel, "draft");
+
+        $targetCategory = $action === "save_and_next" && $nextCategory
+            ? $nextCategory
+            : $category;
+        $message = $action === "save_and_next"
+            ? "Draft kategori berhasil disimpan."
+            : "Draft monografi berhasil disimpan.";
 
         return redirect()
             ->route("rt.monografi.show", [
-                "category" => $targetCategory ?? $category,
+                "category" => $targetCategory,
                 "rt" => $selectedRt->id,
             ])
             ->with("success", $message);
@@ -111,21 +253,29 @@ class MonografiController extends Controller
     protected function renderCategory(
         Request $request,
         MonografiCategory $category,
+        MonografiWilayahResolver $wilayahResolver,
     ) {
-        [$rtOptions, $selectedRt, $categories] = $this->resolveContext(
+        [$rtOptions, $selectedRt, $categories, $wilayahLabel] = $this->resolveContext(
             $request,
+            $wilayahResolver,
         );
 
         $currentCategory =
             $categories->firstWhere("id", $category->id) ??
             $category->load("fields");
-        $fields = $currentCategory->fields()->orderBy("urutan")->get();
-        $tahun = (int) now("Asia/Jakarta")->format("Y");
+        $fields = $currentCategory->fields()->orderBy("urutan")->orderBy("id")->get();
+        $tahun = $this->currentYear();
 
         $values = MonografiData::whereIn("field_id", $fields->pluck("id"))
             ->where("rt_user_id", $selectedRt->id)
             ->where("tahun", $tahun)
             ->pluck("value", "field_id");
+
+        $submission = $this->resolveSubmission(
+            $selectedRt,
+            $tahun,
+            $wilayahLabel,
+        );
 
         $orderedCategories = $categories->values();
         $currentIndex = $orderedCategories->search(
@@ -141,6 +291,8 @@ class MonografiController extends Controller
                 ? $orderedCategories[$currentIndex + 1]
                 : null;
 
+        $isReadOnly = $submission->status === "submitted";
+
         return view(
             "rt.monografi.show",
             compact(
@@ -153,21 +305,20 @@ class MonografiController extends Controller
                 "previousCategory",
                 "nextCategory",
                 "tahun",
+                "submission",
+                "wilayahLabel",
+                "isReadOnly",
             ),
         );
     }
 
-    protected function resolveContext(Request $request): array
-    {
-        $rtOptions = User::where("role", "rt")
-            ->orderBy("id")
-            ->get()
-            ->values()
-            ->map(function ($user, $index) {
-                $user->rt_label = "RT " . ($index + 1);
-
-                return $user;
-            });
+    protected function resolveContext(
+        Request $request,
+        MonografiWilayahResolver $wilayahResolver,
+    ): array {
+        $rtOptions = $wilayahResolver->decorateRtUsers(
+            User::where("role", "rt")->orderBy("id")->get(),
+        );
         $selectedRt =
             $rtOptions->firstWhere("id", (int) $request->query("rt")) ??
             ($rtOptions->firstWhere("id", auth()->id()) ?? $rtOptions->first());
@@ -178,9 +329,182 @@ class MonografiController extends Controller
 
         $categories = MonografiCategory::with("fields")
             ->orderBy("urutan")
+            ->orderBy("id")
             ->get();
 
-        return [$rtOptions, $selectedRt, $categories];
+        return [$rtOptions, $selectedRt, $categories, $selectedRt->wilayah_label];
+    }
+
+    protected function validateFields(Request $request, $fields): array
+    {
+        $rules = [];
+
+        foreach ($fields as $field) {
+            $key = "field_" . $field->id;
+
+            $rules[$key] = match ($field->tipe_input) {
+                "number" => ["nullable", "numeric"],
+                "date" => ["nullable", "date"],
+                default => ["nullable", "string"],
+            };
+        }
+
+        return $request->validate($rules);
+    }
+
+    protected function ensureAllFieldsFilled(User $selectedRt, int $tahun): void
+    {
+        $allFields = MonografiField::query()
+            ->orderBy("urutan")
+            ->orderBy("id")
+            ->get(["id", "label"]);
+
+        if ($allFields->isEmpty()) {
+            throw ValidationException::withMessages([
+                "submit" => "Admin belum menyiapkan field monografi untuk dikirim.",
+            ]);
+        }
+
+        $values = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->pluck("value", "field_id");
+
+        $missingFields = $allFields
+            ->filter(fn($field) => !filled($values->get($field->id)))
+            ->pluck("label");
+
+        if ($missingFields->isNotEmpty()) {
+            $sample = $missingFields->take(3)->implode(", ");
+            $suffix = $missingFields->count() > 3 ? " dan field lainnya." : ".";
+
+            throw ValidationException::withMessages([
+                "submit" => "Lengkapi semua field monografi sebelum mengirim data. Contoh yang masih kosong: {$sample}{$suffix}",
+            ]);
+        }
+    }
+
+    protected function storeSubmission(
+        User $selectedRt,
+        int $tahun,
+        string $wilayahLabel,
+        string $status,
+    ): MonografiSubmission {
+        $submission = MonografiSubmission::firstOrNew([
+            "rt_user_id" => $selectedRt->id,
+            "tahun" => $tahun,
+        ]);
+
+        $submission->status = $status;
+        $submission->wilayah_label = $wilayahLabel;
+        $submission->last_saved_at = now();
+        $submission->submitted_at = $status === "submitted" ? now() : null;
+        $submission->save();
+
+        return $submission;
+    }
+
+    protected function resolveSubmission(
+        User $selectedRt,
+        int $tahun,
+        string $wilayahLabel,
+    ): MonografiSubmission {
+        $submission = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->first();
+
+        if ($submission) {
+            return $submission;
+        }
+
+        $hasData = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->where("tahun", $tahun)
+            ->exists();
+
+        return new MonografiSubmission([
+            "rt_user_id" => $selectedRt->id,
+            "tahun" => $tahun,
+            "status" => "draft",
+            "wilayah_label" => $wilayahLabel,
+        ]);
+    }
+
+    protected function buildHistoryEntries(
+        User $selectedRt,
+        int $tahunAktif,
+        string $wilayahLabel,
+    ) {
+        $submissions = MonografiSubmission::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->orderByDesc("tahun")
+            ->get()
+            ->keyBy("tahun");
+
+        $legacyYears = MonografiData::query()
+            ->where("rt_user_id", $selectedRt->id)
+            ->distinct()
+            ->pluck("tahun")
+            ->map(fn($tahun) => (int) $tahun);
+
+        return $legacyYears
+            ->merge($submissions->keys()->map(fn($tahun) => (int) $tahun))
+            ->push($tahunAktif)
+            ->unique()
+            ->sortDesc()
+            ->values()
+            ->map(function (int $tahun) use (
+                $selectedRt,
+                $wilayahLabel,
+                $tahunAktif,
+                $submissions,
+            ) {
+                $submission = $submissions->get($tahun);
+                $status = $submission?->status ?? "draft";
+                $hasData =
+                    $submission !== null ||
+                    MonografiData::query()
+                        ->where("rt_user_id", $selectedRt->id)
+                        ->where("tahun", $tahun)
+                        ->exists();
+
+                return (object) [
+                    "tahun" => $tahun,
+                    "status" => $hasData ? $status : "kosong",
+                    "wilayah_label" => $submission?->wilayah_label ?? $wilayahLabel,
+                    "last_saved_at" => $submission?->last_saved_at,
+                    "submitted_at" => $submission?->submitted_at,
+                    "is_current_year" => $tahun === $tahunAktif,
+                    "has_data" => $hasData,
+                ];
+            });
+    }
+
+    protected function resolvePrimaryAction(?object $entry): array
+    {
+        if (!$entry || !$entry->has_data || $entry->status === "kosong") {
+            return [
+                "label" => "Isi Data Monografi",
+                "kind" => "start",
+            ];
+        }
+
+        if ($entry->status === "draft") {
+            return [
+                "label" => "Lanjutkan Monografi",
+                "kind" => "continue",
+            ];
+        }
+
+        return [
+            "label" => "Lihat Monografi",
+            "kind" => "view",
+        ];
+    }
+
+    protected function currentYear(): int
+    {
+        return (int) now("Asia/Jakarta")->format("Y");
     }
 }
-
