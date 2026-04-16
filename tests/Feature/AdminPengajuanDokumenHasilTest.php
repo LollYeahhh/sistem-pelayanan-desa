@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
 
 class AdminPengajuanDokumenHasilTest extends TestCase
@@ -207,6 +208,144 @@ class AdminPengajuanDokumenHasilTest extends TestCase
             ->assertOk()
             ->assertSee("Selesai")
             ->assertSee(route("pengajuan.dokumen.download", $permohonan), false);
+    }
+
+    public function test_admin_can_export_arsip_excel_for_selected_months(): void
+    {
+        $admin = $this->createUser("admin");
+
+        $includedCompleted = $this->createPermohonan(status: "selesai");
+        $includedCompleted->update([
+            "reviewed_at" => now("Asia/Jakarta")->setDate(2026, 4, 10)->setTime(9, 0),
+            "file_dokumen_path" => "dokumen-hasil/{$includedCompleted->id}/maret.pdf",
+            "file_dokumen_nama" => "maret.pdf",
+            "file_dokumen_mime" => "application/pdf",
+            "catatan_admin" => "Dokumen Maret siap.",
+        ]);
+
+        $includedRejected = $this->createPermohonan(status: "ditolak");
+        $includedRejected->update([
+            "reviewed_at" => now("Asia/Jakarta")->setDate(2026, 3, 8)->setTime(11, 30),
+            "alasan_penolakan" => "Data belum lengkap",
+        ]);
+
+        $excludedMonth = $this->createPermohonan(status: "selesai");
+        $excludedMonth->update([
+            "reviewed_at" => now("Asia/Jakarta")->setDate(2026, 5, 3)->setTime(8, 15),
+            "file_dokumen_path" => "dokumen-hasil/{$excludedMonth->id}/mei.pdf",
+            "file_dokumen_nama" => "mei.pdf",
+            "file_dokumen_mime" => "application/pdf",
+        ]);
+
+        $response = $this->actingAs($admin)->get(route("admin.arsip.export", [
+            "tahun" => 2026,
+            "bulan" => [3, 4],
+        ]));
+
+        $response->assertOk()->assertDownload("arsip-dokumen-2026-03_04.xlsx");
+
+        $spreadsheet = IOFactory::load($response->baseResponse->getFile()->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $this->assertSame("Arsip Dokumen", $sheet->getTitle());
+        $this->assertSame("No Registrasi", $sheet->getCell("B1")->getValue());
+        $this->assertSame($includedCompleted->no_registrasi, $sheet->getCell("B2")->getValue());
+        $this->assertSame("Selesai", $sheet->getCell("F2")->getValue());
+        $this->assertSame("Ya", $sheet->getCell("J2")->getValue());
+        $this->assertSame("maret.pdf", $sheet->getCell("K2")->getValue());
+        $this->assertSame("application/pdf", $sheet->getCell("L2")->getValue());
+        $this->assertSame("dokumen-hasil/{$includedCompleted->id}/maret.pdf", $sheet->getCell("M2")->getValue());
+
+        $this->assertSame($includedRejected->no_registrasi, $sheet->getCell("B3")->getValue());
+        $this->assertSame("Ditolak", $sheet->getCell("F3")->getValue());
+        $this->assertSame("Data belum lengkap", $sheet->getCell("I3")->getValue());
+        $this->assertSame("Tidak", $sheet->getCell("J3")->getValue());
+
+        $rows = [];
+        for ($row = 2; $row <= $sheet->getHighestRow(); $row++) {
+            $rows[] = (string) $sheet->getCell("B{$row}")->getValue();
+        }
+
+        $this->assertContains($includedCompleted->no_registrasi, $rows);
+        $this->assertContains($includedRejected->no_registrasi, $rows);
+        $this->assertNotContains($excludedMonth->no_registrasi, $rows);
+    }
+
+    public function test_admin_arsip_export_defaults_to_current_month_and_skips_records_without_reviewed_at(): void
+    {
+        $admin = $this->createUser("admin");
+
+        $currentMonthRecord = $this->createPermohonan(status: "selesai");
+        $currentMonthRecord->update([
+            "reviewed_at" => now("Asia/Jakarta"),
+            "file_dokumen_path" => "dokumen-hasil/{$currentMonthRecord->id}/aktif.pdf",
+            "file_dokumen_nama" => "aktif.pdf",
+            "file_dokumen_mime" => "application/pdf",
+        ]);
+
+        $previousMonthRecord = $this->createPermohonan(status: "selesai");
+        $previousMonthRecord->update([
+            "reviewed_at" => now("Asia/Jakarta")->copy()->subMonth(),
+        ]);
+
+        $missingReviewedAt = $this->createPermohonan(status: "selesai");
+        $missingReviewedAt->update([
+            "reviewed_at" => null,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route("admin.arsip.export", [
+            "tahun" => (int) now("Asia/Jakarta")->format("Y"),
+        ]));
+
+        $currentMonthToken = now("Asia/Jakarta")->format("m");
+        $response->assertOk()->assertDownload("arsip-dokumen-" . now("Asia/Jakarta")->format("Y") . "-{$currentMonthToken}.xlsx");
+
+        $spreadsheet = IOFactory::load($response->baseResponse->getFile()->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $rows = [];
+        for ($row = 2; $row <= $sheet->getHighestRow(); $row++) {
+            $rows[] = (string) $sheet->getCell("B{$row}")->getValue();
+        }
+
+        $this->assertContains($currentMonthRecord->no_registrasi, $rows);
+        $this->assertNotContains($previousMonthRecord->no_registrasi, $rows);
+        $this->assertNotContains($missingReviewedAt->no_registrasi, $rows);
+    }
+
+    public function test_admin_arsip_export_can_filter_by_status(): void
+    {
+        $admin = $this->createUser("admin");
+
+        $accepted = $this->createPermohonan(status: "disetujui");
+        $accepted->update([
+            "reviewed_at" => now("Asia/Jakarta")->setDate(2026, 2, 2)->setTime(10, 0),
+        ]);
+
+        $rejected = $this->createPermohonan(status: "ditolak");
+        $rejected->update([
+            "reviewed_at" => now("Asia/Jakarta")->setDate(2026, 2, 5)->setTime(15, 0),
+            "alasan_penolakan" => "Ditolak",
+        ]);
+
+        $response = $this->actingAs($admin)->get(route("admin.arsip.export", [
+            "tahun" => 2026,
+            "bulan" => [2],
+            "status" => "ditolak",
+        ]));
+
+        $response->assertOk()->assertDownload("arsip-dokumen-2026-02.xlsx");
+
+        $spreadsheet = IOFactory::load($response->baseResponse->getFile()->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $rows = [];
+        for ($row = 2; $row <= $sheet->getHighestRow(); $row++) {
+            $rows[] = (string) $sheet->getCell("B{$row}")->getValue();
+        }
+
+        $this->assertContains($rejected->no_registrasi, $rows);
+        $this->assertNotContains($accepted->no_registrasi, $rows);
     }
 
     private function createUser(string $role = "warga"): User

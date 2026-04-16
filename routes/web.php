@@ -17,9 +17,7 @@ use App\Http\Controllers\RT\RTController;
 use App\Models\Layanan;
 use Illuminate\Support\Facades\Route;
 
-// ==========================================
 // LANDING PAGE
-// ==========================================
 Route::get("/", function () {
     $layanan = Layanan::where("is_active", true)
         ->orderBy("id")
@@ -31,9 +29,7 @@ Route::post("/aduan", [AduanMasyarakatController::class, "store"])->name(
     "aduan.store",
 );
 
-// ==========================================
 // AUTH
-// ==========================================
 Route::middleware("guest")->group(function () {
     Route::get("/login", [AuthController::class, "showLogin"])->name("login");
     Route::post("/login", [AuthController::class, "login"]);
@@ -47,9 +43,7 @@ Route::post("/logout", [AuthController::class, "logout"])
     ->middleware("auth")
     ->name("logout");
 
-// ==========================================
 // ADMIN
-// ==========================================
 Route::middleware(["auth", "role:admin"])
     ->prefix("admin")
     ->name("admin.")
@@ -185,6 +179,10 @@ Route::middleware(["auth", "role:admin"])
         ])->name("pengajuan.reject");
 
         // Arsip Dokumen
+        Route::get("/arsip/export", [
+            AdminArsipController::class,
+            "export",
+        ])->name("arsip.export");
         Route::get("/arsip", [AdminArsipController::class, "index"])->name(
             "arsip.index",
         );
@@ -254,9 +252,7 @@ Route::middleware(["auth", "role:admin"])
         ])->name("monografi.fields.destroy");
     });
 
-// ==========================================
 // RT
-// ==========================================
 Route::middleware(["auth", "role:rt"])
     ->prefix("rt")
     ->name("rt.")
@@ -329,9 +325,7 @@ Route::middleware(["auth", "role:rt"])
         );
     });
 
-// ==========================================
 // WARGA
-// ==========================================
 Route::middleware(["auth", "role:warga"])
     ->prefix("warga")
     ->name("warga.")
@@ -397,7 +391,9 @@ Route::middleware(["auth", "role:warga"])
         ])->name("profil.update");
     });
 
-Route::middleware("auth")->get("/pengajuan/{permohonan}/dokumen-hasil", [
-    AdminPengajuanController::class,
-    "downloadDokumen",
-])->name("pengajuan.dokumen.download");
+Route::middleware("auth")
+    ->get("/pengajuan/{permohonan}/dokumen-hasil", [
+        AdminPengajuanController::class,
+        "downloadDokumen",
+    ])
+    ->name("pengajuan.dokumen.download");
