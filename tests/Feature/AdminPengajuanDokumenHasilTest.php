@@ -99,6 +99,78 @@ class AdminPengajuanDokumenHasilTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_admin_pengajuan_index_only_shows_active_inbox_statuses_in_latest_order(): void
+    {
+        Carbon::setTestNow("2026-04-13 08:00:00");
+        $admin = $this->createUser("admin");
+
+        $pendingUser = $this->createUser("warga");
+        $pending = $this->createPermohonan($pendingUser, "menunggu");
+
+        Carbon::setTestNow("2026-04-13 09:00:00");
+        $processingUser = $this->createUser("warga");
+        $processing = $this->createPermohonan($processingUser, "diproses");
+
+        Carbon::setTestNow("2026-04-13 10:00:00");
+        $approvedUser = $this->createUser("warga");
+        $approved = $this->createPermohonan($approvedUser, "disetujui");
+
+        Carbon::setTestNow("2026-04-13 11:00:00");
+        $completedUser = $this->createUser("warga");
+        $completed = $this->createPermohonan($completedUser, "selesai");
+
+        Carbon::setTestNow("2026-04-13 12:00:00");
+        $rejectedUser = $this->createUser("warga");
+        $rejected = $this->createPermohonan($rejectedUser, "ditolak");
+
+        $response = $this->actingAs($admin)->get(route("admin.pengajuan.index"));
+
+        $response->assertOk()
+            ->assertSee($pendingUser->nama_lengkap)
+            ->assertSee($processingUser->nama_lengkap)
+            ->assertSee($approvedUser->nama_lengkap)
+            ->assertDontSee($completedUser->nama_lengkap)
+            ->assertDontSee($rejectedUser->nama_lengkap)
+            ->assertSeeInOrder([
+                $approvedUser->nama_lengkap,
+                $processingUser->nama_lengkap,
+                $pendingUser->nama_lengkap,
+            ]);
+
+        $this->assertSame("menunggu", $pending->status);
+        $this->assertSame("diproses", $processing->status);
+        $this->assertSame("disetujui", $approved->status);
+        $this->assertSame("selesai", $completed->status);
+        $this->assertSame("ditolak", $rejected->status);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_admin_pengajuan_search_only_filters_within_active_inbox(): void
+    {
+        $admin = $this->createUser("admin");
+
+        $activeUser = $this->createUser("warga");
+        $activeUser->update([
+            "nama_lengkap" => "Budi Inbox Aktif",
+        ]);
+        $this->createPermohonan($activeUser, "menunggu");
+
+        $completedUser = $this->createUser("warga");
+        $completedUser->update([
+            "nama_lengkap" => "Budi Inbox Selesai",
+        ]);
+        $this->createPermohonan($completedUser, "selesai");
+
+        $response = $this->actingAs($admin)->get(route("admin.pengajuan.index", [
+            "search" => "Budi Inbox",
+        ]));
+
+        $response->assertOk()
+            ->assertSee($activeUser->nama_lengkap)
+            ->assertDontSee($completedUser->nama_lengkap);
+    }
+
     public function test_upload_rejects_invalid_file_type(): void
     {
         Storage::fake("local");
@@ -238,6 +310,45 @@ class AdminPengajuanDokumenHasilTest extends TestCase
             ->assertOk()
             ->assertSee("Selesai")
             ->assertSee(route("pengajuan.dokumen.download", $permohonan), false);
+    }
+
+    public function test_admin_dashboard_counts_arsip_using_same_definition_as_arsip_page(): void
+    {
+        $admin = $this->createUser("admin");
+
+        $completedUser = $this->createUser("warga");
+        $rejectedUser = $this->createUser("warga");
+        $approvedUser = $this->createUser("warga");
+        $pendingUser = $this->createUser("warga");
+        $processingUser = $this->createUser("warga");
+        $missingReviewedAtUser = $this->createUser("warga");
+
+        $completed = $this->createPermohonan($completedUser, "selesai");
+        $rejected = $this->createPermohonan($rejectedUser, "ditolak");
+        $approved = $this->createPermohonan($approvedUser, "disetujui");
+        $pending = $this->createPermohonan($pendingUser, "menunggu");
+        $processing = $this->createPermohonan($processingUser, "diproses");
+        $missingReviewedAt = $this->createPermohonan($missingReviewedAtUser, "selesai");
+
+        $missingReviewedAt->update([
+            "reviewed_at" => null,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route("admin.dashboard"));
+
+        $response->assertOk()->assertViewHas("stats", function (array $stats) {
+            return ($stats["arsip_dokumen"] ?? null) === 3;
+        });
+
+        $arsipResponse = $this->actingAs($admin)->get(route("admin.arsip.index"));
+
+        $arsipResponse->assertOk()
+            ->assertSee($completedUser->nama_lengkap)
+            ->assertSee($rejectedUser->nama_lengkap)
+            ->assertSee($approvedUser->nama_lengkap)
+            ->assertDontSee($pendingUser->nama_lengkap)
+            ->assertDontSee($processingUser->nama_lengkap)
+            ->assertDontSee($missingReviewedAtUser->nama_lengkap);
     }
 
     public function test_admin_can_export_arsip_excel_for_selected_months(): void

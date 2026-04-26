@@ -16,7 +16,7 @@ class PengajuanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PermohonanSurat::with(["user", "layanan"]);
+        $query = PermohonanSurat::with(["user", "layanan"])->forAdminInbox();
 
         if ($request->filled("search")) {
             $s = $request->search;
@@ -27,10 +27,6 @@ class PengajuanController extends Controller
                     "%{$s}%",
                 );
             });
-        }
-
-        if ($request->filled("status")) {
-            $query->where("status", $request->status);
         }
 
         $pengajuan = $query->orderBy("created_at", "desc")->paginate(10);

@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class PermohonanSurat extends Model
 {
+    public const ARSIP_STATUSES = ["disetujui", "ditolak", "selesai"];
+    public const ADMIN_INBOX_STATUSES = ["menunggu", "diproses", "disetujui"];
+
     protected $table = 'permohonan_surat';
 
     protected $fillable = [
@@ -53,6 +56,18 @@ class PermohonanSurat extends Model
     public function lampiran()
     {
         return $this->hasMany(PermohonanLampiran::class, 'permohonan_id');
+    }
+
+    public function scopeForArsip($query)
+    {
+        return $query
+            ->whereIn("status", self::ARSIP_STATUSES)
+            ->whereNotNull("reviewed_at");
+    }
+
+    public function scopeForAdminInbox($query)
+    {
+        return $query->whereIn("status", self::ADMIN_INBOX_STATUSES);
     }
 
     public function getStatusBadgeAttribute(): array
