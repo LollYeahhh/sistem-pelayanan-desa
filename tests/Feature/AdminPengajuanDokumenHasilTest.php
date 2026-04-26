@@ -7,6 +7,7 @@ use App\Models\PermohonanSurat;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
@@ -62,6 +63,7 @@ class AdminPengajuanDokumenHasilTest extends TestCase
     public function test_admin_can_upload_valid_document_and_mark_permohonan_as_selesai(): void
     {
         Storage::fake("local");
+        Carbon::setTestNow("2026-04-13 21:57:00");
 
         $admin = $this->createUser("admin");
         $warga = $this->createUser("warga");
@@ -83,6 +85,9 @@ class AdminPengajuanDokumenHasilTest extends TestCase
         $this->assertSame("application/pdf", $permohonan->file_dokumen_mime);
         $this->assertSame("Silakan gunakan dokumen ini untuk kebutuhan administrasi.", $permohonan->catatan_admin);
         $this->assertNotNull($permohonan->dokumen_selesai_at);
+        $this->assertNotNull($permohonan->deadline);
+        $this->assertSame("2026-04-20", $permohonan->deadline?->toDateString());
+        $this->assertTrue($permohonan->reviewed_at->equalTo(Carbon::parse("2026-04-13 21:57:00")));
         Storage::disk("local")->assertExists($permohonan->file_dokumen_path);
 
         $notification = $warga->fresh()->notifications()->latest()->first();
@@ -90,6 +95,8 @@ class AdminPengajuanDokumenHasilTest extends TestCase
         $this->assertNotNull($notification);
         $this->assertSame("status_selesai", $notification->data["kind"] ?? null);
         $this->assertSame(route("warga.riwayat.show", $permohonan), $notification->data["url"] ?? null);
+
+        Carbon::setTestNow();
     }
 
     public function test_upload_rejects_invalid_file_type(): void
@@ -149,6 +156,7 @@ class AdminPengajuanDokumenHasilTest extends TestCase
     public function test_warga_and_rt_history_pages_show_download_button_only_for_completed_documents(): void
     {
         Storage::fake("local");
+        Carbon::setTestNow("2026-04-13 21:57:00");
 
         $warga = $this->createUser("warga");
         $rt = $this->createUser("rt");
@@ -173,22 +181,44 @@ class AdminPengajuanDokumenHasilTest extends TestCase
             "dokumen_selesai_at" => now(),
         ]);
 
+        $wargaSelesai->refresh();
+        $rtSelesai->refresh();
+        $wargaMasaBerlaku = $wargaSelesai->masa_berlaku_surat?->translatedFormat("d M Y");
+        $rtMasaBerlaku = $rtSelesai->masa_berlaku_surat?->translatedFormat("d M Y");
+
         $this->actingAs($warga)
             ->get(route("warga.riwayat.show", $wargaSelesai))
             ->assertOk()
             ->assertSee(route("pengajuan.dokumen.download", $wargaSelesai), false)
-            ->assertSee("Dokumen warga siap digunakan.");
+            ->assertSee("Dokumen warga siap digunakan.")
+            ->assertSee("Masa Berlaku Surat")
+            ->assertSee($wargaMasaBerlaku)
+            ->assertSeeInOrder([
+                "Ditinjau Oleh",
+                "Masa Berlaku Surat",
+                "Dokumen Hasil",
+            ]);
 
         $this->actingAs($warga)
             ->get(route("warga.riwayat.show", $wargaDisetujui))
             ->assertOk()
-            ->assertDontSee(route("pengajuan.dokumen.download", $wargaDisetujui), false);
+            ->assertDontSee(route("pengajuan.dokumen.download", $wargaDisetujui), false)
+            ->assertDontSee("Masa Berlaku Surat");
 
         $this->actingAs($rt)
             ->get(route("rt.riwayat.show", $rtSelesai))
             ->assertOk()
             ->assertSee(route("pengajuan.dokumen.download", $rtSelesai), false)
-            ->assertSee("Dokumen RT siap digunakan.");
+            ->assertSee("Dokumen RT siap digunakan.")
+            ->assertSee("Masa Berlaku Surat")
+            ->assertSee($rtMasaBerlaku)
+            ->assertSeeInOrder([
+                "Ditinjau Oleh",
+                "Masa Berlaku Surat",
+                "Dokumen Hasil",
+            ]);
+
+        Carbon::setTestNow();
     }
 
     public function test_admin_arsip_page_includes_completed_permohonan_and_download_action(): void

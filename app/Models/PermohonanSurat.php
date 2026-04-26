@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class PermohonanSurat extends Model
@@ -19,6 +20,7 @@ class PermohonanSurat extends Model
     {
         return [
             'reviewed_at' => 'datetime',
+            'deadline' => 'date',
             'dokumen_selesai_at' => 'datetime',
         ];
     }
@@ -70,5 +72,18 @@ class PermohonanSurat extends Model
         return $this->getAttribute('alasan_penolakan')
             ?? $this->getAttribute('catatan_admin')
             ?? $this->getAttribute('catatan');
+    }
+
+    public function getMasaBerlakuSuratAttribute(): ?Carbon
+    {
+        if ($this->deadline) {
+            return $this->deadline->copy();
+        }
+
+        if ($this->reviewed_at) {
+            return $this->reviewed_at->copy()->addDays(7);
+        }
+
+        return null;
     }
 }

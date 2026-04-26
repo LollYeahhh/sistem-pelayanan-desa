@@ -12,6 +12,7 @@
         Kembali ke Riwayat
     </a>
     <div class="mb-6 rounded-2xl border border-gray-100 bg-white p-6 lg:p-8">
+        @php($masaBerlakuSurat = $permohonan->masa_berlaku_surat)
         <div
             class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
@@ -41,7 +42,7 @@
             </span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+        <div class="grid grid-cols-2 gap-4 text-sm lg:grid-cols-5">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Tanggal Diajukan</p>
                 <p class="mt-1 font-bold text-[#0F172A]">{{
@@ -74,6 +75,12 @@
                             "-"
                     }}</p>
                 </div>
+                @if ($permohonan->status === 'selesai' && $permohonan->file_dokumen_path && $masaBerlakuSurat)
+                    <div>
+                        <p class="text-[11px] font-semibold uppercase tracking-wider text-[#94A3B8]">Masa Berlaku Surat</p>
+                        <p class="mt-1 font-bold text-[#0F172A]">{{ $masaBerlakuSurat->translatedFormat("d M Y") }}</p>
+                    </div>
+                @endif
             @endif
         </div>
 

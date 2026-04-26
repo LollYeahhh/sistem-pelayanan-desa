@@ -146,6 +146,7 @@ class PengajuanController extends Controller
 
         $file = $request->file("file_dokumen");
         $path = $file->store("dokumen-hasil/" . $permohonan->id, "local");
+        $completedAt = now();
 
         $permohonan->update([
             "status" => "selesai",
@@ -155,8 +156,9 @@ class PengajuanController extends Controller
             "catatan_admin" => $validated["catatan_admin"] ?? null,
             "alasan_penolakan" => null,
             "reviewed_by" => auth()->id(),
-            "reviewed_at" => now(),
-            "dokumen_selesai_at" => now(),
+            "reviewed_at" => $completedAt,
+            "deadline" => $completedAt->copy()->addDays(7),
+            "dokumen_selesai_at" => $completedAt,
         ]);
 
         $this->dispatchDatabaseNotification(
