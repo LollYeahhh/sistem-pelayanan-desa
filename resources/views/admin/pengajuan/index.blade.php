@@ -59,7 +59,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center text-sm text-gray py-12">Belum ada pengajuan masuk.</td></tr>
+                <tr><td colspan="6" class="text-center text-sm text-gray py-12">Belum ada pengajuan aktif.</td></tr>
                 @endforelse
             </tbody>
         </table>

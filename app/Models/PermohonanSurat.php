@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class PermohonanSurat extends Model
 {
+    public const ARSIP_STATUSES = ["disetujui", "ditolak", "selesai"];
+    public const ADMIN_INBOX_STATUSES = ["menunggu", "diproses", "disetujui"];
+
     protected $table = 'permohonan_surat';
 
     protected $fillable = [
@@ -19,6 +23,7 @@ class PermohonanSurat extends Model
     {
         return [
             'reviewed_at' => 'datetime',
+            'deadline' => 'date',
             'dokumen_selesai_at' => 'datetime',
         ];
     }
@@ -53,6 +58,18 @@ class PermohonanSurat extends Model
         return $this->hasMany(PermohonanLampiran::class, 'permohonan_id');
     }
 
+    public function scopeForArsip($query)
+    {
+        return $query
+            ->whereIn("status", self::ARSIP_STATUSES)
+            ->whereNotNull("reviewed_at");
+    }
+
+    public function scopeForAdminInbox($query)
+    {
+        return $query->whereIn("status", self::ADMIN_INBOX_STATUSES);
+    }
+
     public function getStatusBadgeAttribute(): array
     {
         return match($this->status) {
@@ -70,5 +87,18 @@ class PermohonanSurat extends Model
         return $this->getAttribute('alasan_penolakan')
             ?? $this->getAttribute('catatan_admin')
             ?? $this->getAttribute('catatan');
+    }
+
+    public function getMasaBerlakuSuratAttribute(): ?Carbon
+    {
+        if ($this->deadline) {
+            return $this->deadline->copy();
+        }
+
+        if ($this->reviewed_at) {
+            return $this->reviewed_at->copy()->addDays(7);
+        }
+
+        return null;
     }
 }

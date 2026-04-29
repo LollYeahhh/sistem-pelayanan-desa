@@ -16,7 +16,7 @@ class PengajuanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PermohonanSurat::with(["user", "layanan"]);
+        $query = PermohonanSurat::with(["user", "layanan"])->forAdminInbox();
 
         if ($request->filled("search")) {
             $s = $request->search;
@@ -27,10 +27,6 @@ class PengajuanController extends Controller
                     "%{$s}%",
                 );
             });
-        }
-
-        if ($request->filled("status")) {
-            $query->where("status", $request->status);
         }
 
         $pengajuan = $query->orderBy("created_at", "desc")->paginate(10);
@@ -146,6 +142,7 @@ class PengajuanController extends Controller
 
         $file = $request->file("file_dokumen");
         $path = $file->store("dokumen-hasil/" . $permohonan->id, "local");
+        $completedAt = now();
 
         $permohonan->update([
             "status" => "selesai",
@@ -155,8 +152,9 @@ class PengajuanController extends Controller
             "catatan_admin" => $validated["catatan_admin"] ?? null,
             "alasan_penolakan" => null,
             "reviewed_by" => auth()->id(),
-            "reviewed_at" => now(),
-            "dokumen_selesai_at" => now(),
+            "reviewed_at" => $completedAt,
+            "deadline" => $completedAt->copy()->addDays(7),
+            "dokumen_selesai_at" => $completedAt,
         ]);
 
         $this->dispatchDatabaseNotification(
