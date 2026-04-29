@@ -56,8 +56,7 @@ class ArsipController extends Controller
     protected function buildArsipQuery(Request $request, bool $forExport = false)
     {
         $query = PermohonanSurat::with(["user", "layanan", "reviewer"])
-            ->whereIn("status", ["disetujui", "ditolak", "selesai"])
-            ->whereNotNull("reviewed_at");
+            ->forArsip();
 
         if ($request->filled("search")) {
             $search = trim((string) $request->input("search"));

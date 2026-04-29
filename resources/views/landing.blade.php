@@ -145,7 +145,7 @@
                     <p class="text-[16px] font-normal text-[#6b7280] leading-[28px] mt-1">Akses semua kebutuhan administrasi desa dalam satu genggaman</p>
                 </div>
 
-                -- Grid Layanan DINAMIS dari database --
+                {{-- Grid Layanan DINAMIS dari database --}}
                 <div
                     class="grid grid-cols-2 justify-items-center gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 lg:gap-x-5 lg:gap-y-7"
                 >

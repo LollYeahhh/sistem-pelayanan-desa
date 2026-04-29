@@ -15,6 +15,7 @@
     </a>
     {{-- Header Card --}}
     <div class="bg-white rounded-2xl border border-gray-100 p-6 lg:p-8 mb-6">
+        @php($masaBerlakuSurat = $permohonan->masa_berlaku_surat)
         <div
             class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
         >
@@ -39,7 +40,7 @@
         </div>
 
         {{-- Timeline --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-2 gap-4 text-sm lg:grid-cols-5">
             <div>
                 <p class="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider">Tanggal Diajukan</p>
                 <p class="font-bold text-[#0f172a] mt-1">{{
@@ -72,6 +73,12 @@
                             "-"
                     }}</p>
                 </div>
+                @if ($permohonan->status === 'selesai' && $permohonan->file_dokumen_path && $masaBerlakuSurat)
+                    <div>
+                        <p class="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wider">Masa Berlaku Surat</p>
+                        <p class="font-bold text-[#0f172a] mt-1">{{ $masaBerlakuSurat->translatedFormat("d M Y") }}</p>
+                    </div>
+                @endif
             @endif
         </div>
 

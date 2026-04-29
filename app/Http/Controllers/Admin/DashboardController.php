@@ -7,8 +7,8 @@ use App\Models\Layanan;
 use App\Models\User;
 use App\Models\PermohonanSurat;
 use App\Models\AduanMasyarakat;
-use App\Models\DokumenArsip;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -30,16 +30,15 @@ class DashboardController extends Controller
                         ->orWhereNull("status_akun");
                 })
                 ->count(),
-            "arsip_dokumen" => DokumenArsip::count(),
+            "arsip_dokumen" => PermohonanSurat::forArsip()->count(),
         ];
 
-        $availableYears = PermohonanSurat::selectRaw(
-            "DISTINCT YEAR(created_at) as year",
-        )
+        $availableYears = PermohonanSurat::query()
             ->whereNotNull("created_at")
-            ->orderByDesc("year")
-            ->pluck("year")
-            ->map(fn($year) => (int) $year)
+            ->pluck("created_at")
+            ->map(fn($createdAt) => (int) Carbon::parse($createdAt)->format("Y"))
+            ->unique()
+            ->sortDesc()
             ->values();
 
         if (!$availableYears->contains($currentYear)) {
@@ -66,13 +65,11 @@ class DashboardController extends Controller
             ->get();
 
         // Data chart bulanan (pengajuan per bulan tahun terpilih)
-        $chartData = PermohonanSurat::selectRaw(
-            "MONTH(created_at) as bulan, COUNT(*) as total",
-        )
+        $chartData = PermohonanSurat::query()
             ->whereYear("created_at", $selectedYear)
-            ->groupByRaw("MONTH(created_at)")
-            ->orderByRaw("MONTH(created_at)")
-            ->pluck("total", "bulan")
+            ->pluck("created_at")
+            ->map(fn($createdAt) => (int) Carbon::parse($createdAt)->format("n"))
+            ->countBy()
             ->toArray();
 
         $bulanLabels = [
