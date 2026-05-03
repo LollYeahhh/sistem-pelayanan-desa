@@ -1,0 +1,256 @@
+{
+  "name": "WhatsApp Cek Status Surat",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wa-incoming",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "wa-incoming"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.body.message || '').toLowerCase() }}",
+              "rightValue": "status",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1002",
+      "name": "IF Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1003",
+              "name": "message_text",
+              "value": "={{ ($json.body.message || '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1004",
+              "name": "no_registrasi",
+              "value": "={{ (($json.body.message || '').toUpperCase().match(/REG-[A-Z0-9]+/) || [null])[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1005",
+              "name": "sender",
+              "value": "={{ $json.body.sender || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1006",
+      "name": "Set Data Surat",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        740,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'http://GANTI-URL-LARAVEL-ANDA/api/cek-surat/' + ($json.no_registrasi || 'REG-TIDAKADA') }}",
+        "sendQuery": false,
+        "sendHeaders": false,
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1007",
+      "name": "HTTP Cek Surat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        980,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1008",
+              "name": "reply",
+              "value": "={{ $json.status === 'tidak ditemukan' ? 'Data surat tidak ditemukan.' : 'Status surat Anda: ' + $json.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1009",
+      "name": "Set Reply Status",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1010",
+              "name": "reply",
+              "value": "Pesan tidak dikenali. Kirim contoh: cek status surat REG-FKSK8JV",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1011",
+      "name": "Set Reply Default",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        740,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { reply: $json.reply } }}",
+        "options": {}
+      },
+      "id": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1012",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "IF Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Status": {
+      "main": [
+        [
+          {
+            "node": "Set Data Surat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Reply Default",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Data Surat": {
+      "main": [
+        [
+          {
+            "node": "HTTP Cek Surat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Cek Surat": {
+      "main": [
+        [
+          {
+            "node": "Set Reply Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Reply Status": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Reply Default": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "9d3f2ef2-0f6d-4ab9-8f9e-a3be6bca1999",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "status-surat-workflow"
+}
