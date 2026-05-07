@@ -158,7 +158,7 @@
             >
                 <div>
                     <h2 class="text-xl font-extrabold text-[#111827]">
-                        Riwayat Pengisian
+                        Riwayat Pengisian Monografi
                     </h2>
                     <p class="mt-1 text-sm text-[#64748B]">Setiap tahun ditampilkan dengan status dan aksi yang sesuai.</p>
                 </div>
