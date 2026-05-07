@@ -4,7 +4,7 @@ Aplikasi Laravel untuk layanan surat desa, monografi RT, arsip dokumen, notifika
 
 ## Stack
 
-- PHP 8.2+
+- PHP 8.3+
 - Laravel 12
 - MySQL atau PostgreSQL
 - Node.js 22+ untuk build Vite
@@ -36,6 +36,8 @@ Set nilai berikut saat deploy:
 - `APP_ENV=production`
 - `APP_DEBUG=false`
 - `APP_URL=https://domain-aplikasi-anda`
+- `PHP=8.3`
+- `ext-gd` dan `ext-zip` wajib tersedia
 - `SESSION_DRIVER=database`
 - `CACHE_STORE=database`
 - `QUEUE_CONNECTION=database`
@@ -65,6 +67,12 @@ npm run build
 php artisan config:cache
 php artisan route:cache
 ```
+
+Untuk Railway:
+
+- root directory service harus tetap `sistem-pelayanan-desa`
+- repo ini menyediakan `railpack.json` untuk mem-pin PHP `8.3`
+- requirement `gd` dan `zip` dipaksa melalui `composer.json`, bukan hanya setting UI Railway
 
 Verifikasi hasilnya:
 
