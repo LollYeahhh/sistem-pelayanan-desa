@@ -3,5 +3,27 @@
   "packages": {
     "php": "8.3"
   },
-  "phpExtensions": ["gd"]
+  "phpExtensions": ["gd"],
+  "buildAptPackages": [
+    "bison",
+    "re2c",
+    "build-essential",
+    "autoconf",
+    "pkg-config",
+    "libxml2-dev",
+    "libssl-dev",
+    "libcurl4-openssl-dev",
+    "zlib1g-dev",
+    "libreadline-dev",
+    "libgd-dev",
+    "libpng-dev",
+    "libjpeg-dev",
+    "libfreetype6-dev",
+    "libonig-dev",
+    "libicu-dev",
+    "libpq-dev",
+    "libzip-dev",
+    "libsqlite3-dev",
+    "libsodium-dev"
+  ]
 }
