@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -27,6 +28,7 @@ class User extends Authenticatable
         "nama_lengkap",
         "nik",
         "email",
+        "email_verified_at",
         "password",
         "role",
         "tempat_lahir",
@@ -51,6 +53,7 @@ class User extends Authenticatable
     {
         return [
             "tanggal_lahir" => "date",
+            "email_verified_at" => "datetime",
             "is_verified" => "boolean",
             "password" => "hashed",
         ];
@@ -72,6 +75,11 @@ class User extends Authenticatable
     public function permohonan()
     {
         return $this->hasMany(PermohonanSurat::class);
+    }
+
+    public function registrationOtps(): HasMany
+    {
+        return $this->hasMany(RegistrationOtp::class);
     }
 
     public function monografiEntries()

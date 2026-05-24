@@ -144,15 +144,17 @@
                 </div>
             </div>
 
-            <button
-                type="button"
+            <a
+                href="https://wa.me/6281329164778?text=Halo%2C%20saya%20ingin%20bertanya."
+                target="_blank"
+                rel="noopener noreferrer"
                 class="hidden text-[#141B34] transition hover:text-primary md:inline-flex"
-                aria-label="Pesan"
+                aria-label="Hubungi via WhatsApp"
             >
                 <svg class="h-[34px] w-[34px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75h6.75m-6.75 3h4.5m-8.25 6.375V6.375A2.625 2.625 0 017.5 3.75h9A2.625 2.625 0 0119.125 6.375v7.5A2.625 2.625 0 0116.5 16.5h-5.69l-3.936 3.28A.375.375 0 016.25 19.5v-3A2.625 2.625 0 013.625 13.875z" />
                 </svg>
-            </button>
+            </a>
 
             <div class="relative shrink-0">
                 <button
@@ -346,7 +348,7 @@
             status_ditolak:
                 '<svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
             umum:
-                '<svg class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2.25"/></svg>',
+                '<svg class="h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>',
         };
 
         let initialized = false;

@@ -20,6 +20,18 @@
                 </p>
             </div>
 
+            @if(session('error'))
+                <div class="bg-red-50 text-red-700 border border-red-200 p-3 rounded-2xl mb-5 text-sm text-center">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="bg-green-50 text-green-700 border border-green-200 p-3 rounded-2xl mb-5 text-sm text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             {{-- Form --}}
             <form method="POST" action="{{ route('register') }}" class="space-y-5">
                 @csrf
@@ -101,7 +113,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                     </svg>
                     <p class="text-xs text-primary leading-5">
-                        Akun dapat dibuat tanpa NIK. Lengkapi NIK Anda nanti melalui halaman profil setelah berhasil masuk ke sistem.
+                        Kode OTP akan dikirim ke email Anda untuk verifikasi registrasi. Akun tetap menunggu aktivasi admin sebelum fitur ajukan layanan dapat digunakan.
                     </p>
                 </div>
 
