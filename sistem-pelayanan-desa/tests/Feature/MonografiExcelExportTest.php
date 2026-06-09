@@ -62,6 +62,7 @@ class MonografiExcelExportTest extends TestCase
             "tahun" => 2026,
             "value" => "25",
         ]);
+        $this->submitMonografi($rtUser, 2026);
 
         $exporter = app(MonografiExcelExporter::class);
         $path = $exporter->export(2026);
@@ -72,6 +73,64 @@ class MonografiExcelExportTest extends TestCase
 
         $this->assertNotNull($targetRow);
         $this->assertSame(25, (int) $sheet->getCell("C{$targetRow}")->getCalculatedValue());
+    }
+
+    public function test_export_only_includes_submitted_monografi_data(): void
+    {
+        $submittedRt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT Submitted",
+            "rt_rw" => "01/01",
+        ]);
+        $draftRt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT Draft",
+            "rt_rw" => "02/01",
+        ]);
+        $legacyRt = $this->createUser("rt", [
+            "nama_lengkap" => "Ketua RT Legacy",
+            "rt_rw" => "03/01",
+        ]);
+
+        $category = MonografiCategory::create([
+            "kode" => "A",
+            "nama_kategori" => "Potensi Sumber Daya Manusia",
+            "urutan" => 1,
+        ]);
+
+        $field = MonografiField::create([
+            "category_id" => $category->id,
+            "label" => "Jumlah Penduduk Laki-laki",
+            "tipe_input" => "number",
+            "urutan" => 1,
+        ]);
+
+        foreach ([
+            [$submittedRt, "10"],
+            [$draftRt, "99"],
+            [$legacyRt, "77"],
+        ] as [$rtUser, $value]) {
+            MonografiData::create([
+                "field_id" => $field->id,
+                "rt_user_id" => $rtUser->id,
+                "tahun" => 2026,
+                "value" => $value,
+            ]);
+        }
+
+        $this->submitMonografi($submittedRt, 2026);
+        $this->submitMonografi($draftRt, 2026, status: "draft");
+
+        $path = app(MonografiExcelExporter::class)->export(2026);
+        $spreadsheet = IOFactory::load($path);
+        $sheet = $spreadsheet->getSheetByName("REKAP");
+
+        $targetRow = $this->findRowByColumnValue($sheet, "B", "Jumlah Penduduk Laki-laki");
+
+        $this->assertNotNull($targetRow);
+        $this->assertSame("RT. 01/01", $sheet->getCell("C8")->getValue());
+        $this->assertSame(10, (int) $sheet->getCell("C{$targetRow}")->getCalculatedValue());
+        $this->assertSame(10, (int) $sheet->getCell("N{$targetRow}")->getCalculatedValue());
+        $this->assertNull($sheet->getCell("D8")->getValue());
+        $this->assertNull($sheet->getCell("D{$targetRow}")->getValue());
     }
 
     public function test_export_inserts_extra_fields_categories_and_rt_columns(): void
@@ -119,6 +178,8 @@ class MonografiExcelExportTest extends TestCase
         ]);
 
         foreach ($rtUsers as $index => $rtUser) {
+            $this->submitMonografi($rtUser, 2026);
+
             MonografiData::create([
                 "field_id" => $fieldExisting->id,
                 "rt_user_id" => $rtUser->id,
@@ -159,7 +220,7 @@ class MonografiExcelExportTest extends TestCase
         $this->assertSame("=SUM(C{$extraFieldRow}:N{$extraFieldRow})", $sheet->getCell("O{$extraFieldRow}")->getValue());
     }
 
-    public function test_export_prefers_submission_wilayah_snapshot_and_fallback_rt_label(): void
+    public function test_export_uses_submitted_submission_wilayah_snapshots(): void
     {
         $rtWithSnapshot = $this->createUser("rt", [
             "nama_lengkap" => "Ketua RT Snapshot",
@@ -186,9 +247,19 @@ class MonografiExcelExportTest extends TestCase
         MonografiSubmission::create([
             "rt_user_id" => $rtWithSnapshot->id,
             "tahun" => 2026,
-            "status" => "draft",
+            "status" => "submitted",
             "wilayah_label" => "RT PILIHAN 07",
             "last_saved_at" => now(),
+            "submitted_at" => now(),
+        ]);
+
+        MonografiSubmission::create([
+            "rt_user_id" => $rtWithoutSnapshot->id,
+            "tahun" => 2026,
+            "status" => "submitted",
+            "wilayah_label" => "RT 02",
+            "last_saved_at" => now(),
+            "submitted_at" => now(),
         ]);
 
         MonografiData::create([
@@ -242,6 +313,8 @@ class MonografiExcelExportTest extends TestCase
         ]);
 
         foreach ([$rtOne, $rtTwo, $rtThree] as $index => $rtUser) {
+            $this->submitMonografi($rtUser, 2026);
+
             MonografiData::create([
                 "field_id" => $field->id,
                 "rt_user_id" => $rtUser->id,
@@ -293,6 +366,7 @@ class MonografiExcelExportTest extends TestCase
             "tahun" => 2026,
             "value" => "99",
         ]);
+        $this->submitMonografi($rtUser, 2026);
 
         $path = app(MonografiExcelExporter::class)->export(2026);
         $spreadsheet = IOFactory::load($path);
@@ -329,6 +403,23 @@ class MonografiExcelExportTest extends TestCase
             "rt_user_id" => $rtUser->id,
             "tahun" => $year,
             "value" => (string) $baseValue,
+        ]);
+        $this->submitMonografi($rtUser, $year);
+    }
+
+    private function submitMonografi(
+        User $rtUser,
+        int $year,
+        ?string $wilayahLabel = null,
+        string $status = "submitted",
+    ): MonografiSubmission {
+        return MonografiSubmission::create([
+            "rt_user_id" => $rtUser->id,
+            "tahun" => $year,
+            "status" => $status,
+            "wilayah_label" => $wilayahLabel ?? "RT. {$rtUser->rt_rw}",
+            "last_saved_at" => now(),
+            "submitted_at" => $status === "submitted" ? now() : null,
         ]);
     }
 

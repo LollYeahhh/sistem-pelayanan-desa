@@ -86,11 +86,25 @@ class MonografiExcelExporter
             ->orderBy("id")
             ->get();
 
+        $allRtUsers = User::query()
+            ->where("role", "rt")
+            ->orderBy("id")
+            ->get(["id", "nama_lengkap", "rt_rw"]);
+
+        $submittedSubmissions = MonografiSubmission::query()
+            ->where("tahun", $year)
+            ->where("status", "submitted")
+            ->whereIn("rt_user_id", $allRtUsers->pluck("id"))
+            ->get(["rt_user_id", "wilayah_label"]);
+
+        $submittedRtIds = $submittedSubmissions
+            ->pluck("rt_user_id")
+            ->values();
+
         $rtUsers = $this->wilayahResolver->decorateRtUsers(
-            User::query()
-                ->where("role", "rt")
-                ->orderBy("id")
-                ->get(["id", "nama_lengkap", "rt_rw"]),
+            $allRtUsers
+                ->whereIn("id", $submittedRtIds)
+                ->values(),
         );
 
         $fieldIds = $categories
@@ -103,6 +117,7 @@ class MonografiExcelExporter
             : MonografiData::query()
                 ->whereIn("field_id", $fieldIds)
                 ->where("tahun", $year)
+                ->whereIn("rt_user_id", $submittedRtIds)
                 ->get(["field_id", "rt_user_id", "value"]);
 
         $valueLookup = [];
@@ -111,9 +126,7 @@ class MonografiExcelExporter
             $valueLookup[$entry->field_id][$entry->rt_user_id] = $entry->value;
         }
 
-        $submissionWilayahLookup = MonografiSubmission::query()
-            ->where("tahun", $year)
-            ->whereIn("rt_user_id", $rtUsers->pluck("id"))
+        $submissionWilayahLookup = $submittedSubmissions
             ->pluck("wilayah_label", "rt_user_id")
             ->all();
 

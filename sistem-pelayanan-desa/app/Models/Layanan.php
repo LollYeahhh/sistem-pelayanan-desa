@@ -66,4 +66,19 @@ class Layanan extends Model
     {
         return $this->sections->sum(fn($s) => $s->fields->count());
     }
+
+    public function getIconUrlAttribute(): ?string
+    {
+        if (!$this->icon_path) {
+            return null;
+        }
+
+        $path = "images/layanan/" . $this->icon_path;
+
+        if (!file_exists(public_path($path))) {
+            return null;
+        }
+
+        return asset($path);
+    }
 }

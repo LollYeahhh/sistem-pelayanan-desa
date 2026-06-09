@@ -157,9 +157,9 @@
                             <div
                                 class="flex h-[124px] w-[124px] items-center justify-center rounded-[11px] bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md sm:h-[132px] sm:w-[132px] lg:h-[144px] lg:w-[144px]"
                             >
-                                @if ($item->icon_path)
+                                @if ($item->icon_url)
                                     <img
-                                        src="{{ asset('images/layanan/' . $item->icon_path) }}"
+                                        src="{{ $item->icon_url }}"
                                         alt="{{ $item->nama_layanan }}"
                                         class="h-16 w-16 object-contain transition-transform duration-300 group-hover:scale-105 sm:h-[72px] sm:w-[72px] lg:h-[82px] lg:w-[82px]"
                                     />

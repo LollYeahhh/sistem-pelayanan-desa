@@ -167,9 +167,9 @@
                         <div
                             class="bg-white rounded-[11px] w-[140px] h-[140px] lg:w-[158px] lg:h-[158px] flex items-center justify-center shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md"
                         >
-                            @if ($item->icon_path)
+                            @if ($item->icon_url)
                                 <img
-                                    src="{{ asset('images/layanan/' . $item->icon_path) }}"
+                                    src="{{ $item->icon_url }}"
                                     alt="{{ $item->nama_layanan }}"
                                     class="w-20 h-20 lg:w-24 lg:h-24 object-contain group-hover:scale-110 transition-transform duration-300"
                                 />
@@ -246,9 +246,9 @@
                             <div
                                 class="flex h-[42px] w-[42px] items-center justify-center rounded-full {{ $status['icon'] }}"
                             >
-                                @if ($p->layanan?->icon_path)
+                                @if ($p->layanan?->icon_url)
                                     <img
-                                        src="{{ asset('images/layanan/' . $p->layanan->icon_path) }}"
+                                        src="{{ $p->layanan->icon_url }}"
                                         alt="{{ $p->layanan->nama_layanan }}"
                                         class="h-6 w-6 object-contain"
                                     />

@@ -11,7 +11,10 @@ class SuratController extends Controller
     {
         $noRegistrasi = strtoupper(trim($id));
 
-        $surat = PermohonanSurat::with('user:id,nama_lengkap')
+        $surat = PermohonanSurat::with([
+            'user:id,nama_lengkap',
+            'layanan:id,nama_layanan',
+        ])
             ->where('no_registrasi', $noRegistrasi)
             ->first();
 
@@ -24,6 +27,7 @@ class SuratController extends Controller
         return response()->json([
             'status' => $surat->status,
             'nama' => $surat->user?->nama_lengkap,
+            'jenis_surat' => $surat->layanan?->nama_layanan,
         ]);
     }
 }

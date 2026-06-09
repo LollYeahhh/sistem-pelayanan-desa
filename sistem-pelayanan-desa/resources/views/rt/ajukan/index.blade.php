@@ -59,9 +59,9 @@
                     <div
                         class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#EAF2FF]"
                     >
-                        @if ($item->icon_path)
+                        @if ($item->icon_url)
                             <img
-                                src="{{ asset('images/layanan/' . $item->icon_path) }}"
+                                src="{{ $item->icon_url }}"
                                 alt="{{ $item->nama_layanan }}"
                                 class="h-14 w-14 object-contain"
                             />

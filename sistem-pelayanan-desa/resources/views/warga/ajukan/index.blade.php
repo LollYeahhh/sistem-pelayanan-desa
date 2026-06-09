@@ -58,9 +58,9 @@
                 <div
                     class="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-primary/10 transition"
                 >
-                    @if ($item->icon_path)
+                    @if ($item->icon_url)
                         <img
-                            src="{{ asset('images/layanan/' . $item->icon_path) }}"
+                            src="{{ $item->icon_url }}"
                             alt="{{ $item->nama_layanan }}"
                             class="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-300"
                         />
