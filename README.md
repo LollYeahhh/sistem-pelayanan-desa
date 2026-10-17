@@ -216,7 +216,7 @@ Konfigurasi yang perlu disesuaikan setelah impor:
 | Node / bagian | Konfigurasi |
 | --- | --- |
 | `HTTP Request Laravel1` | Ganti domain API dengan `https://domain-laravel-anda.example/api/cek-surat/` dan pertahankan expression nomor registrasi dari `surat_id`. |
-| `HTTP Request WAHA1` | Ganti URL menjadi `https://domain-waha-anda.example/api/sendText`, isi header `X-Api-Key` dengan API key milik sendiri, dan sesuaikan body `session` dengan sesi WhatsApp yang dihubungkan. Pertahankan expression penerima dan teks balasan. |
+| `HTTP Request WAHA1` | Ganti URL menjadi `https://domain-waha-anda.example/api/sendText`. Pilih **Authentication: Generic Credential Type**, **Generic Auth Type: Header Auth**, lalu hubungkan credential WAHA seperti petunjuk di bawah. Sesuaikan body `session` dengan sesi WhatsApp yang dihubungkan; pertahankan expression penerima dan teks balasan. |
 | `Google Gemini Chat Model` | Hubungkan kredensial Google Gemini milik sendiri dan pilih model yang tersedia pada akun serta versi n8n yang digunakan. Referensi kredensial dari hasil impor perlu dihubungkan kembali pada instance sendiri. |
 | `Webhook` | Metode `POST`, path `whatsapp-bot`, dan respons melalui node `Respond to Webhook1`. |
 | `GET Website Desa` dan `Strip HTML & Prep` | Periksa URL sumber, data terstruktur desa, dan konteks informasi yang diberikan ke AI Agent. Perbarui data ketika informasi desa berubah. |
@@ -229,6 +229,14 @@ https://domain-n8n-anda.example/webhook/whatsapp-bot
 ```
 
 Semua domain dan kredensial contoh pada panduan ini harus diganti dengan konfigurasi milik sendiri. Konfigurasi integrasi WAHA dilakukan pada layanan WAHA dan node workflow n8n.
+
+#### Menyimpan API key WAHA dengan aman
+
+Di n8n, buat credential **Header Auth** dengan **Name** `X-Api-Key` dan **Value** berisi API key WAHA. Pilih credential tersebut pada node `HTTP Request WAHA1` setelah mengimpor workflow. Simpan nilai key hanya di Credentials n8n, bukan pada parameter Headers, node Set/Code, atau berkas workflow JSON. Lihat [dokumentasi Header Auth n8n](https://docs.n8n.io/integrations/builtin/credentials/httprequest/#using-header-auth).
+
+Jika key pernah masuk repository, ganti key pada layanan WAHA/Sumopod dan nonaktifkan key lama, kemudian perbarui credential n8n. Menghapus key dari file maupun riwayat Git tidak menonaktifkannya. Setelah penggantian, uji pengiriman pesan dengan key baru dan pastikan key lama ditolak. Lihat [panduan keamanan WAHA](https://waha.devlike.pro/docs/how-to/security/).
+
+Setelah pembersihan riwayat Git, buat clone baru untuk pengembangan. Jangan menggabungkan atau mendorong riwayat dari clone lama karena key dapat masuk kembali. Salinan pada fork, clone lain, pull request, atau cache GitHub memerlukan penanganan terpisah sesuai [panduan GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
 
 ### Integrasi alternatif: Express dan Meta WhatsApp Cloud API
 

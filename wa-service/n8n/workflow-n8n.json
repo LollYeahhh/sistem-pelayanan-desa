@@ -218,15 +218,8 @@
       "parameters": {
         "method": "POST",
         "url": "https://waha-u7ujoknzrbxl.besi.sumopod.my.id/api/sendText",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "X-Api-Key",
-              "value": "***REMOVED***"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
