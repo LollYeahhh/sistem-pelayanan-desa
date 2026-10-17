@@ -1,0 +1,1106 @@
+{
+  "name": "WA Sistem Pelayanan Desa",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-ktp-01",
+              "name": "reply",
+              "value": "INFORMASI PERSYARATAN PEMBUATAN KTP\nLayanan ini diperuntukkan bagi warga yang baru pertama kali membuat KTP (minimal usia 17 tahun/sudah menikah) atau melakukan pergantian KTP.\n\nDokumen Persyaratan:\n1. Fotokopi Kartu Keluarga (KK) terbaru.\n2. Fotokopi Akta Kelahiran atau Ijazah Terakhir.\n3. Surat Pengantar asli dari RT/RW setempat.\n(Catatan: Harap persiapkan juga dokumen asli untuk keperluan verifikasi petugas).\n\nAJUKAN LEBIH CEPAT SECARA DARING:\nDapatkan surat pengantar desa secara mandiri dan cepat melalui portal pelayanan kami:\nhttps://pelayanandesadukuhtengah.my.id/\n\nPROSES PEREKAMAN:\nSetelah administrasi pengajuan selesai, pemohon *wajib hadir* ke Kantor Kecamatan Bojong untuk proses perekaman biometrik (foto wajah dan sidik jari).\n\nJadwal Perekaman:\nSenin – Jumat (08.00 – 15.00 WIB)",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1200
+      ],
+      "id": "80a5990c-506f-4bdf-a9d1-8b7808d2e042",
+      "name": "Reply KTP"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-kk-01",
+              "name": "reply",
+              "value": "INFORMASI PERSYARATAN PEMBUATAN KARTU KELUARGA (KK)\nLayanan ini diperuntukkan bagi warga yang ingin membuat KK baru (seperti pasangan baru menikah), pembaruan data (penambahan/pengurangan anggota keluarga), atau pergantian KK yang hilang/rusak.\n\nDokumen Persyaratan:\n1. Surat Pengantar asli dari RT/RW setempat.\n2. Fotokopi KTP Kepala Keluarga dan/atau KTP suami-istri.\n3. Fotokopi Buku Nikah / Akta Perkawinan.\n4. Dokumen pendukung sesuai pengajuan:\n- Penambahan Anak: Lampirkan Surat Keterangan Lahir / Akta Kelahiran.\n- Warga Pindahan: Lampirkan Surat Keterangan Pindah (SKPWNI).\n- Pengurangan Anggota: Lampirkan Akta Kematian atau Surat Pindah.\n(Catatan: Harap persiapkan juga dokumen asli untuk keperluan verifikasi petugas). \n\nAJUKAN LEBIH CEPAT SECARA DARING: \nProses administrasi permohonan Kartu Keluarga dapat diajukan secara mandiri melalui portal pelayanan kami: \nhttps://pelayanandesadukuhtengah.my.id/ \n\nPENYERAHAN BERKAS FISIK: \nSetelah pengajuan daring diproses, pemohon wajib menyerahkan berkas fisik ke Kantor Desa Dukuhtengah untuk diterbitkan Surat Pengantar Desa menuju Kecamatan/Disdukcapil. \n\nJadwal Layanan Kantor Desa: \nSenin – Jumat (08.00 – 15.00 WIB) ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1328
+      ],
+      "id": "76a07655-b66d-4752-85a8-48808a78b4df",
+      "name": "Reply KK"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-dom-01",
+              "name": "reply",
+              "value": "INFORMASI PERSYARATAN SURAT KETERANGAN DOMISILI\nLayanan ini diperuntukkan bagi warga atau pendatang yang membutuhkan bukti keterangan tempat tinggal di wilayah Desa Dukuhtengah untuk berbagai keperluan administrasi.\n\nDokumen Persyaratan:\n1. Surat Pengantar asli dari RT/RW setempat sesuai alamat domisili.\n2. Fotokopi Kartu Tanda Penduduk (KTP) pemohon.\n3. Fotokopi Kartu Keluarga (KK).\n(Catatan: Jika Surat Domisili digunakan untuk keperluan izin/keterangan usaha, mohon siapkan juga informasi atau berkas pendukung pendirian usahanya).\n\nAJUKAN LEBIH CEPAT SECARA DARING: \nProses permohonan Surat Keterangan Domisili dapat diajukan secara mandiri tanpa harus antre melalui portal pelayanan kami: \nhttps://pelayanandesadukuhtengah.my.id/\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1456
+      ],
+      "id": "a2d5f53c-4e40-4749-9d71-ee02fdbac70c",
+      "name": "Reply Domisili"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-akta-01",
+              "name": "reply",
+              "value": "INFORMASI PERSYARATAN PEMBUATAN AKTA KELAHIRAN\nLayanan ini diperuntukkan bagi warga yang ingin mengurus pencatatan kelahiran anak untuk mendapatkan Akta Kelahiran dan penambahan anggota keluarga baru pada Kartu Keluarga (KK).\n\nDokumen Persyaratan:\n1. Surat Keterangan Lahir asli dari Bidan / Dokter / Rumah Sakit.\n2. Fotokopi Buku Nikah / Akta Perkawinan orang tua.\n3. Fotokopi Kartu Keluarga (KK) orang tua.\n4. Fotokopi KTP kedua orang tua.\n\nAJUKAN LEBIH CEPAT SECARA DARING:\nProses permohonan Surat Pengantar Kelahiran dari desa dapat diajukan secara mandiri melalui portal pelayanan kami:\nhttps://pelayanandesadukuhtengah.my.id/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1584
+      ],
+      "id": "3dcbc698-0071-4439-a110-95b503e2c7e6",
+      "name": "Reply Akta"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-sktm-01",
+              "name": "reply",
+              "value": "INFORMASI PERSYARATAN SURAT KETERANGAN TIDAK MAMPU (SKTM)\nLayanan ini diperuntukkan bagi warga yang membutuhkan dokumen bukti kondisi ekonomi kurang mampu untuk keperluan administrasi lanjutan (seperti pengajuan beasiswa/bantuan pendidikan, jaminan kesehatan, atau bantuan sosial lainnya).\n\nDokumen Persyaratan:\n1. Surat Pengantar asli dari RT/RW setempat.\n2. Surat Keterangan Kondisi Ekonomi/Tidak Mampu yang ditandatangani oleh Ketua RT.\n3. Fotokopi Kartu Tanda Penduduk (KTP) pemohon/orang tua.\n4. Fotokopi Kartu Keluarga (KK).\n\nAJUKAN LEBIH CEPAT SECARA DARING: Proses permohonan SKTM dapat diajukan secara mandiri melalui portal pelayanan kami: https://pelayanandesadukuhtengah.my.id/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1712
+      ],
+      "id": "b08857ec-6d9c-4c41-b540-14cee47bcffd",
+      "name": "Reply SKTM"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"reply\": \"{{$json.reply}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1696,
+        976
+      ],
+      "id": "0f6c05c5-b841-41e4-93cd-a7247ec938fe",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a4e0793-193e-41b9-a9fe-3a52f0373b14",
+              "name": "surat_id",
+              "value": "={{ ($json.message || '').match(/REG-[A-Z0-9]{8}/i)?.[0] || 'FORMAT-TIDAK-LENGKAP' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        896
+      ],
+      "id": "754c863c-ee5a-42db-b5cf-ec36a8e1dfcd",
+      "name": "ambil id1"
+    },
+    {
+      "parameters": {
+        "url": "=https://pelayanandesadukuhtengah.my.id/api/cek-surat/{{$json.surat_id}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        128,
+        896
+      ],
+      "id": "338522eb-4832-4d4d-bfc3-4e0d1db2296f",
+      "name": "HTTP Request Laravel1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c6bea021-1d9e-4dee-aaae-d46cb86bf208",
+              "name": "reply",
+              "value": "={{\n  $json.reply ?? (\n    $json.status === 'tidak ditemukan'\n      ? `*INFORMASI TIDAK DITEMUKAN*\n\nNomor registrasi yang Anda masukkan tidak cocok dengan basis data kami.\n\n*Langkah yang dapat dilakukan:*\n- Periksa kembali penulisan nomor (Contoh: REG-XXXXXXXX).\n- Jika Anda baru saja mengajukan, mohon tunggu beberapa saat hingga data masuk ke sistem.\n\nButuh bantuan? Silakan hubungi admin pada jam layanan (08.00 - 15.00 WIB).`\n      : `*STATUS PENGAJUAN SURAT*\n\nBerikut adalah rincian pengajuan Anda:\n\n*Pemohon:* ${$json.nama || '-'}\n*Jenis Surat:* ${$json.jenis_surat || '-'}\n*Status Saat Ini:* *${$json.status_label || $json.status}*\n\n*Catatan Layanan:*\nDokumen yang telah berstatus *Selesai* dapat diunduh langsung pada website atau diambil langsung di Kantor Desa Dukuhtengah pada hari kerja (Senin-Jumat, 08.00-15.00 WIB).\n\nTerima kasih telah menggunakan portal layanan: https://pelayanandesadukuhtengah.my.id/`\n  )\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        896
+      ],
+      "id": "29f28895-5e2c-4096-99a6-c5ccc99d13e6",
+      "name": "Set (reply Laravel)1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56372ccb-b68e-403d-84e6-148132cc8cfc",
+              "name": "reply",
+              "value": "Selamat datang di Sistem Pelayanan Desa Dukuhtengah.\n\nMelalui asisten virtual ini, kami siap membantu mengarahkan kebutuhan administrasi Anda dengan lebih mudah.\n\nINFORMASI LAYANAN:\n• Cek Status Pengajuan Surat\n• Panduan & Syarat Pembuatan Surat\n• Tanya Jawab Layanan Desa\n\nPORTAL LAYANAN MANDIRI:\nUntuk efisiensi waktu, pengajuan surat dan layanan administrasi dapat dilakukan secara daring. Anda dapat memantau status pengajuan secara real-time melalui tautan berikut:\nhttps://pelayanandesadukuhtengah.my.id/\n\nKunjungi juga situs web resmi kami untuk mengetahui program dan informasi terbaru mengenai desa:\nhttps://dukuhtengah-bojong.desa.id/\n\nJADWAL PELAYANAN KANTOR:\nSenin – Jumat: 08.00 – 15.00 WIB\n\nTerima kasih telah menggunakan layanan kami. Kami senantiasa berupaya memberikan kemudahan administrasi bagi warga Desa Dukuhtengah.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        1104
+      ],
+      "id": "88e587df-644a-4fd6-ba9e-448d9ca66f41",
+      "name": "reply sapaan1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://waha-u7ujoknzrbxl.besi.sumopod.my.id/api/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "***REMOVED***"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "session",
+              "value": "wa_desa"
+            },
+            {
+              "name": "chatId",
+              "value": "={{ $('Webhook').item.json.body.payload._data.key.remoteJidAlt || $('Webhook').item.json.body.payload.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.reply }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1904,
+        976
+      ],
+      "id": "24fe7a5c-ff9e-4285-a070-df5c6dcf8206",
+      "name": "HTTP Request WAHA1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-bot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -912,
+        928
+      ],
+      "id": "2f6adb34-ad0d-4570-b747-667a4611a59e",
+      "name": "Webhook",
+      "webhookId": "40abc783-3db0-47de-a955-213e47a78e35"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e9044f91-e813-4004-bc78-cb8d7dc06e16",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "status",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c9bad9f9-71f4-468a-8fdd-8f7f6a70cc26",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "cek",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c905cee4-6aaf-47ae-94b4-9f70e59bbec4",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "reg-",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "bd2bc9f7-4f52-4f7a-8ec2-084f04d7a9e8",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "lihat",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "09576092-d859-400a-81f7-5d63fe11e184",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "disetujui",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "31eafa6b-db1f-4653-9421-d797541dae71",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "selesai",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -496,
+        960
+      ],
+      "id": "00364f0f-0760-42aa-9f9d-7b8a3c04a840",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35e50fdb-7dd2-424a-a935-4012af157741",
+              "name": "message",
+              "value": "={{ $json?.body?.payload?.body || $json?.body?.message || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -704,
+        928
+      ],
+      "id": "03d98f7a-caf5-4ab3-a8ab-9a9b9003a44e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6e144bf1-d7d6-4244-ac5a-c3655888f774",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "halo",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "7e144bf1-d7d6-4244-ac5a-c3655888f775",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "hai",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "8e144bf1-d7d6-4244-ac5a-c3655888f776",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "helo",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "9e144bf1-d7d6-4244-ac5a-c3655888f777",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "selamat",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "ae144bf1-d7d6-4244-ac5a-c3655888f778",
+              "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+              "rightValue": "assalamu",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -112,
+        1264
+      ],
+      "id": "71465a0b-7ec4-49c6-82ec-b93c85bca4f6",
+      "name": "IF (sapaan)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9e27515-4d31-4bef-b1f0-819cd980acd7",
+              "name": "reply",
+              "value": "={{ $json.output ?? 'Maaf, asisten sedang sibuk atau diluar jangkauan. Silakan coba lagi atau kunjungi https://dukuhtengah-bojong.desa.id/ 🙏' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        2096
+      ],
+      "id": "199ec229-766e-41b5-b4f6-bd947aca9c24",
+      "name": "Set (reply Gemini)"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ ['Pertanyaan pengguna:', $('Strip HTML & Prep').item.json.message || '', '', 'DATA RESMI DESA:', '===START DATA===', $('Strip HTML & Prep').item.json.website_content || '', '===END DATA===', '', 'METADATA SUMBER:', 'Sumber utama: ' + ($('Strip HTML & Prep').item.json.source_title || '') + ' - ' + ($('Strip HTML & Prep').item.json.source_url || ''), 'Confidence retrieval: ' + ($('Strip HTML & Prep').item.json.confidence || ''), 'Bagian cocok: ' + ($('Strip HTML & Prep').item.json.matched_section || ''), '', 'INSTRUKSI:', 'Jawab pertanyaan pengguna hanya berdasarkan DATA RESMI DESA di atas.', 'Jika DATA RESMI memuat jawaban eksplisit seperti kodepos, alamat, jam layanan, nama jabatan, agenda, artikel, atau sumber, jawab langsung dan jangan gunakan fallback.', 'Jika DATA RESMI benar-benar tidak memuat jawabannya, jawab persis: \"Informasi tersebut belum tersedia. Silakan hubungi kantor desa atau cek langsung di https://dukuhtengah-bojong.desa.id/\"', 'Jawab singkat dan sopan, maksimal 3 kalimat.'].join('\\n') }}",
+        "options": {
+          "systemMessage": "{{ `Kamu adalah asisten virtual Desa Dukuhtengah, Kecamatan Bojong.\n\nATURAN SUMBER:\n- Gunakan HANYA DATA RESMI DESA di bawah ini untuk menjawab.\n- Jangan memakai pengetahuan bawaan, asumsi, atau ingatan percakapan untuk fakta desa, perangkat desa, alamat, jadwal, biaya, kontak, layanan, artikel, atau status pengajuan.\n- Memory percakapan hanya boleh dipakai untuk memahami rujukan konteks pengguna, bukan sebagai sumber fakta.\n- Jika DATA RESMI DESA tidak memuat jawaban yang diminta, jawab persis: \"Informasi tersebut belum tersedia. Silakan hubungi kantor desa atau cek langsung di https://dukuhtengah-bojong.desa.id/\"\n\nDATA RESMI DESA:\n===START DATA===\n${$('Strip HTML & Prep').item.json.website_content || ''}\n===END DATA===\n\nMETADATA SUMBER:\nSumber utama: ${$('Strip HTML & Prep').item.json.source_title || ''} - ${$('Strip HTML & Prep').item.json.source_url || ''}\nConfidence retrieval: ${$('Strip HTML & Prep').item.json.confidence || ''}\nBagian cocok: ${$('Strip HTML & Prep').item.json.matched_section || ''}\nDebug retrieval: ${JSON.stringify($('Strip HTML & Prep').item.json.retrieval_debug || {})}\n\nINSTRUKSI JAWABAN:\n- Jika DATA RESMI memuat pasangan jabatan dan nama, gunakan pasangan tersebut untuk menjawab.\n- Pertanyaan dengan kata \"sekarang\" atau \"saat ini\" dijawab berdasarkan data website resmi yang tersedia di DATA RESMI.\n- Jangan gunakan fallback jika DATA RESMI sudah memuat informasi relevan seperti nama jabatan, alamat, jam layanan, agenda, artikel, atau sumber.\n- Jawab pertanyaan pengguna secara singkat, sopan, dan langsung.\n- Maksimal 3 kalimat kecuali pengguna meminta daftar.\n- Jika pertanyaan meminta cek status surat, arahkan pengguna mengetik: \"Cek status surat REG-ABC12345\".\n- Jika pertanyaan di luar topik Desa Dukuhtengah atau layanan desa, balas: \"Mohon maaf, pertanyaan tersebut di luar cakupan tugas saya sebagai asisten Desa Dukuhtengah. Silakan tanyakan seputar layanan desa kami.\"\n- Jangan membuat syarat, biaya, jadwal, nama pejabat, alamat, kontak, atau isi artikel yang tidak tertulis di DATA RESMI DESA.` }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        848,
+        2096
+      ],
+      "id": "8993281d-3164-4bab-b1fb-993eb9b29114",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.payload._data.key.remoteJidAlt || $('Webhook').item.json.body.payload.from }}",
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        2464
+      ],
+      "id": "2700b86c-dade-4577-87ce-4c7da083a5ae",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        848,
+        2304
+      ],
+      "id": "029db1e8-5e82-4b76-8e3d-edee71634da8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gs8YIIwPn1LJc4tG",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "faq-pengantar-01",
+              "name": "reply",
+              "value": "📝 *Persyaratan Surat Pengantar:*\n\n1. Fotokopi KTP\n2. Fotokopi KK\n3. Surat pengantar RT/RW\n4. Jelaskan keperluan surat\n\n📍 Datang ke kantor desa.\n⏰ Senin–Jumat: 08.00–15.00 WIB\n\n🌐 Atau ajukan online di website kami!\n👉 *www.dukuhtengah.desa.id*",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        1856
+      ],
+      "id": "3f3d07b2-30e3-4bf6-a375-fb0248213302",
+      "name": "Reply Surat Usaha"
+    },
+    {
+      "parameters": {
+        "url": "https://dukuhtengah-bojong.desa.id/",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        2096
+      ],
+      "id": "5e898dc9-5f4a-4604-b242-5522d259c335",
+      "name": "GET Website Desa"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst html = input.data || input.body || input || '';\nconst htmlStr = typeof html === 'string' ? html : JSON.stringify(html);\nconst BASE_URL = 'https://dukuhtengah-bojong.desa.id/';\n\nlet userMessage = input.message || '';\nif (!userMessage) {\n  try {\n    userMessage = $('Edit Fields').first().json.message || '';\n  } catch (error) {\n    userMessage = '';\n  }\n}\n\nconst normalizedMessage = userMessage.toLowerCase();\nconst FALLBACK_NOT_FOUND = 'INFORMASI TERKAIT TIDAK DITEMUKAN DI SUMBER RESMI.';\n\nconst structuredFacts = {\n  village: 'Desa Dukuhtengah',\n  district: 'Kecamatan Bojong',\n  regency: 'Kabupaten Tegal',\n  province: 'Jawa Tengah',\n  officeAddress: 'Jl. Raya Dukuhtengah Kecamatan Bojong Kabupaten Tegal',\n  postalCode: '52465',\n  phone: '-',\n  email: '-',\n  serviceHours: 'Senin-Jumat, 08.00-15.00 WIB',\n  servicePortal: 'https://pelayanandesadukuhtengah.my.id/',\n  officialWebsite: BASE_URL,\n  officials: [\n    { name: 'WARIS', role: 'Kepala Desa' },\n    { name: 'PIPIT SUPRIA', role: 'Sekretaris' },\n    { name: 'RIZAL AFRIANTO', role: 'Bendahara' },\n    { name: 'AKHMAD ASMAWI', role: 'Kaur Perencanaan' },\n    { name: 'LUKMAN NUROPIK', role: 'Kasi Kesra' },\n    { name: 'RINA SUPRIHATI', role: 'Kasi Pemerintahan' },\n    { name: 'SULISTIYOWATI', role: 'Kasi Pelayanan' },\n    { name: 'ANDRI AJAT SETIAWAN', role: 'Kaur TU' },\n  ],\n  services: [\n    'KTP',\n    'Kartu Keluarga',\n    'Surat Keterangan Domisili',\n    'Akta Kelahiran',\n    'Surat Keterangan Tidak Mampu',\n    'Surat Keterangan Usaha',\n  ],\n};\n\nfunction decodeEntities(text) {\n  return String(text || '')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))\n    .replace(/&#([0-9]+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)));\n}\n\nfunction normalizeSpaces(text) {\n  return String(text || '').replace(/\\s+/g, ' ').trim();\n}\n\nfunction cleanHtml(rawHtml) {\n  return decodeEntities(rawHtml)\n    .replace(/<head[\\s\\S]*?<\\/head>/gi, ' ')\n    .replace(/<script[\\s\\S]*?<\\/script>/gi, ' ')\n    .replace(/<style[\\s\\S]*?<\\/style>/gi, ' ')\n    .replace(/<noscript[\\s\\S]*?<\\/noscript>/gi, ' ')\n    .replace(/<svg[\\s\\S]*?<\\/svg>/gi, ' ')\n    .replace(/<canvas[\\s\\S]*?<\\/canvas>/gi, ' ')\n    .replace(/<!--[\\s\\S]*?-->/g, ' ')\n    .replace(/<br\\s*\\/?>/gi, '\\n')\n    .replace(/<\\/(p|div|section|article|aside|footer|header|nav|li|tr|td|h[1-6])>/gi, '\\n')\n    .replace(/<(?:\\\"[^\\\"]*\\\"|'[^']*'|[^'\\\">])*>/g, ' ')\n    .replace(/\\{\\s*this\\.loading[\\s\\S]*?x-init=\"onLoading\\(\\)\"/gi, ' ')\n    .replace(/document\\.querySelector\\([^)]*\\)[^\\s]*/gi, ' ')\n    .replace(/[ \\t\\r\\f\\v]+/g, ' ')\n    .replace(/\\n\\s+/g, '\\n')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n}\n\nfunction includesAny(text, terms) {\n  return terms.some((term) => text.includes(term));\n}\n\nfunction tokenize(text) {\n  const stopWords = new Set([\n    'apa', 'itu', 'yang', 'dan', 'atau', 'di', 'ke', 'dari', 'dalam', 'untuk', 'dengan',\n    'siapa', 'bagaimana', 'gimana', 'berapa', 'kapan', 'mana', 'adalah', 'saya', 'ingin',\n    'mau', 'menanyakan', 'tentang', 'desa', 'dukuhtengah', 'kecamatan', 'bojong', 'kabupaten',\n    'tegal', 'provinsi', 'jawa', 'tengah', 'resmi', 'website', 'info', 'informasi', 'ada',\n    'tidak', 'kantor', 'lokasi', 'alamat',\n  ]);\n\n  return Array.from(new Set(\n    String(text || '')\n      .toLowerCase()\n      .replace(/[^a-z0-9\\s]/g, ' ')\n      .split(/\\s+/)\n      .map((token) => token.trim())\n      .filter((token) => token.length >= 3 && !stopWords.has(token))\n  ));\n}\n\nfunction sectionBetween(text, startMarker, endMarkers) {\n  const lowerText = text.toLowerCase();\n  const start = lowerText.indexOf(startMarker.toLowerCase());\n  if (start === -1) {\n    return '';\n  }\n\n  const afterStart = start + startMarker.length;\n  let end = text.length;\n  for (const marker of endMarkers) {\n    const markerIndex = lowerText.indexOf(marker.toLowerCase(), afterStart);\n    if (markerIndex !== -1 && markerIndex < end) {\n      end = markerIndex;\n    }\n  }\n\n  return normalizeSpaces(startMarker + ' ' + text.slice(afterStart, end));\n}\n\nfunction structuredFactsText() {\n  return [\n    'DATA TERSTRUKTUR DESA',\n    `Nama: ${structuredFacts.village}`,\n    `Wilayah: ${structuredFacts.district}, ${structuredFacts.regency}, ${structuredFacts.province}`,\n    `Alamat kantor: ${structuredFacts.officeAddress}`,\n    `Kodepos: ${structuredFacts.postalCode}`,\n    `Telepon: ${structuredFacts.phone}`,\n    `Email: ${structuredFacts.email}`,\n    `Jam layanan kantor: ${structuredFacts.serviceHours}`,\n    `Portal layanan mandiri: ${structuredFacts.servicePortal}`,\n    `Website resmi: ${structuredFacts.officialWebsite}`,\n    `Layanan yang dikenal: ${structuredFacts.services.join(', ')}`,\n  ].join('\\n');\n}\n\nfunction extractDetailDesa(text) {\n  const section = sectionBetween(text, 'Detail Desa', ['Statistik Pengunjung', 'APBDes', 'Hak cipta situs']);\n  const address = /Alamat\\s*:?\\s*(.*?)(?=\\s+Desa\\s*:|\\s+Kecamatan\\s*:|\\s+Kabupaten\\s*:|\\s+Kodepos\\s*:|$)/i.exec(section)?.[1]?.trim();\n  const postalCode = /Kodepos\\s*:?\\s*([0-9]+)/i.exec(section)?.[1]?.trim();\n  const phoneRaw = /Telepon\\s*:?\\s*(.*?)(?=\\s+Email\\s*:|$)/i.exec(section)?.[1]?.trim();\n  const phone = phoneRaw && !/^email\\b/i.test(phoneRaw) ? phoneRaw : '';\n  const email = /Email\\s*:?\\s*([^\\s]+@[^\\s]+)?/i.exec(section)?.[1]?.trim();\n\n  return {\n    text: [\n      'DETAIL DESA',\n      `Alamat: ${address || structuredFacts.officeAddress}`,\n      `Desa: ${structuredFacts.village.replace(/^Desa\\s+/i, '')}`,\n      `Kecamatan: ${structuredFacts.district.replace(/^Kecamatan\\s+/i, '')}`,\n      `Kabupaten: ${structuredFacts.regency.replace(/^Kabupaten\\s+/i, '')}`,\n      `Kodepos: ${postalCode || structuredFacts.postalCode}`,\n      `Telepon: ${phone || structuredFacts.phone}`,\n      `Email: ${email || structuredFacts.email}`,\n      `Jam layanan kantor: ${structuredFacts.serviceHours}`,\n    ].join('\\n'),\n    found: section.length > 0,\n  };\n}\n\nfunction formatOfficials(officials) {\n  return [\n    'PEMERINTAH DESA',\n    ...officials.map((official) => `${official.role}: ${official.name}`),\n  ].join('\\n');\n}\n\nfunction extractPemerintahDesa(text) {\n  const section = sectionBetween(text, 'Pemerintah Desa', ['Komentar', 'Media Sosial', 'Peta Wilayah Desa']);\n  const fallbackOfficials = structuredFacts.officials;\n\n  if (section) {\n    const cleaned = section\n      .replace(/\\bImage:\\s*/gi, '')\n      .replace(/\\bBelum Rekam Kehadiran\\b/gi, '')\n      .replace(/\\s+/g, ' ')\n      .trim();\n\n    const parsedOfficials = fallbackOfficials\n      .map((official) => ({\n        name: official.name,\n        role: official.role,\n        found: cleaned.toLowerCase().includes(official.name.toLowerCase())\n          && cleaned.toLowerCase().includes(official.role.toLowerCase()),\n      }))\n      .filter((official) => official.found)\n      .map(({ name, role }) => ({ name, role }));\n\n    return {\n      text: formatOfficials(parsedOfficials.length > 0 ? parsedOfficials : fallbackOfficials),\n      found: true,\n    };\n  }\n\n  return {\n    text: formatOfficials(fallbackOfficials),\n    found: false,\n  };\n}\n\nfunction extractAgenda(text) {\n  const section = sectionBetween(text, 'Agenda', ['Sinergi Program', 'Galeri', 'Pemerintah Desa']);\n  return {\n    text: section || 'AGENDA\\nBelum ada agenda yang terbaca dari website resmi.',\n    found: section.length > 0,\n  };\n}\n\nfunction absolutizeUrl(url) {\n  const rawUrl = String(url || '').trim();\n\n  if (!rawUrl || rawUrl.startsWith('#')) {\n    return '';\n  }\n\n  if (/^(javascript:|mailto:|tel:)/i.test(rawUrl)) {\n    return '';\n  }\n\n  if (/^https?:\\/\\//i.test(rawUrl)) {\n    return rawUrl;\n  }\n\n  if (rawUrl.startsWith('//')) {\n    return 'https:' + rawUrl;\n  }\n\n  const base = BASE_URL.replace(/\\/+$/, '');\n\n  if (rawUrl.startsWith('/')) {\n    return base + rawUrl;\n  }\n\n  return base + '/' + rawUrl.replace(/^\\.?\\//, '');\n}\n\nfunction extractArticleCandidates(rawHtml) {\n  const decoded = decodeEntities(rawHtml);\n  const linkRegex = /<a\\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>([\\s\\S]*?)<\\/a>/gi;\n  const candidates = [];\n  let match;\n\n  while ((match = linkRegex.exec(decoded)) !== null) {\n    const url = absolutizeUrl(match[1]);\n    if (!url) {\n      continue;\n    }\n    const title = normalizeSpaces(match[2].replace(/<[^>]+>/g, ' '));\n    if (!/\\/artikel\\/\\d{4}\\/\\d{1,2}\\/\\d{1,2}\\//i.test(url) || title.length < 4) {\n      continue;\n    }\n\n    const after = decoded.slice(match.index + match[0].length, match.index + match[0].length + 900);\n    const excerpt = normalizeSpaces(after.replace(/<[^>]+>/g, ' ')).slice(0, 500);\n    const date = /(\\d{1,2}\\s+[A-Za-z]+\\s+\\d{4})/.exec(excerpt)?.[1] || '';\n    candidates.push({ title, url, excerpt, date });\n  }\n\n  const unique = new Map();\n  for (const candidate of candidates) {\n    const key = candidate.url.replace(/\\/0(\\d)\\//g, '/$1/');\n    const current = unique.get(key);\n    if (!current || candidate.excerpt.length > current.excerpt.length) {\n      unique.set(key, candidate);\n    }\n  }\n\n  return Array.from(unique.values()).slice(0, 10);\n}\n\nfunction scoreText(text, tokens) {\n  const lower = String(text || '').toLowerCase();\n  let score = 0;\n  for (const token of tokens) {\n    if (lower.includes(token)) {\n      score += token.length >= 5 ? 3 : 1;\n    }\n  }\n  for (let index = 0; index < tokens.length - 1; index += 1) {\n    const phrase = tokens[index] + ' ' + tokens[index + 1];\n    if (lower.includes(phrase)) {\n      score += 4;\n    }\n  }\n  return score;\n}\n\nasync function getArticleDetail(article) {\n  if (typeof fetch !== 'function') {\n    return null;\n  }\n\n  try {\n    const response = await fetch(article.url, {\n      method: 'GET',\n      headers: { 'User-Agent': 'n8n-desa-dukuhtengah-bot/1.0' },\n    });\n    if (!response.ok) {\n      return null;\n    }\n    const detailHtml = await response.text();\n    const detailText = cleanHtml(detailHtml);\n    const detail = sectionBetween(detailText, article.title, ['Komentar', 'Media Sosial', 'Artikel Terkini', 'Kategori']);\n    return normalizeSpaces(detail || detailText).slice(0, 2200);\n  } catch (error) {\n    return null;\n  }\n}\n\nasync function findArticleContext(rawHtml, message) {\n  const tokens = tokenize(message);\n  const candidates = extractArticleCandidates(rawHtml)\n    .map((candidate) => ({\n      ...candidate,\n      score: scoreText(`${candidate.title} ${candidate.excerpt}`, tokens),\n    }))\n    .filter((candidate) => candidate.score > 0)\n    .sort((a, b) => b.score - a.score || b.excerpt.length - a.excerpt.length)\n    .slice(0, 3);\n\n  if (candidates.length === 0) {\n    return null;\n  }\n\n  const enriched = [];\n  for (const article of candidates) {\n    const detail = await getArticleDetail(article);\n    enriched.push({ ...article, detail });\n  }\n\n  return {\n    text: [\n      'ARTIKEL TERKAIT',\n      ...enriched.map((article) => [\n        `Judul: ${article.title}`,\n        article.date ? `Tanggal: ${article.date}` : '',\n        article.detail ? `Isi halaman detail: ${article.detail}` : `Ringkasan dari homepage: ${article.excerpt}`,\n        `Sumber detail: ${article.url}`,\n      ].filter(Boolean).join('\\n')),\n    ].join('\\n\\n'),\n    candidates: enriched,\n    usedDetail: enriched.some((article) => Boolean(article.detail)),\n  };\n}\n\nfunction splitIntoChunks(text) {\n  const headingMarkers = [\n    'SELAMAT DATANG',\n    'Artikel Terkini',\n    'Menu Kategori',\n    'Statistik',\n    'Arsip Artikel',\n    'Agenda',\n    'Sinergi Program',\n    'Galeri',\n    'Pemerintah Desa',\n    'Komentar',\n    'Media Sosial',\n    'Peta Wilayah Desa',\n    'Peta Lokasi Kantor',\n    'Detail Desa',\n    'Statistik Pengunjung',\n    'APBDes',\n    'Hak cipta situs',\n  ];\n\n  const chunks = [];\n  const lowerText = text.toLowerCase();\n  const markers = headingMarkers\n    .map((marker) => ({ marker, index: lowerText.indexOf(marker.toLowerCase()) }))\n    .filter((item) => item.index !== -1)\n    .sort((a, b) => a.index - b.index);\n\n  for (let index = 0; index < markers.length; index += 1) {\n    const current = markers[index];\n    const next = markers[index + 1];\n    const end = next ? next.index : text.length;\n    const chunk = normalizeSpaces(text.slice(current.index, end));\n    if (chunk.length > 20) {\n      chunks.push(chunk.slice(0, 1800));\n    }\n  }\n\n  const sentenceChunks = text\n    .split(/(?<=[.!?])\\s+|\\s{2,}/)\n    .map((chunk) => normalizeSpaces(chunk))\n    .filter((chunk) => chunk.length > 35 && chunk.length < 1200);\n\n  return Array.from(new Set([...chunks, ...sentenceChunks]));\n}\n\nfunction retrieveRelevantChunks(text, message) {\n  const tokens = tokenize(message);\n  if (tokens.length === 0) {\n    return [];\n  }\n\n  return splitIntoChunks(text)\n    .map((chunk) => ({ chunk, score: scoreText(chunk, tokens) }))\n    .filter((item) => item.score >= 1)\n    .sort((a, b) => b.score - a.score || a.chunk.length - b.chunk.length)\n    .slice(0, 5);\n}\n\nasync function buildFocusedContext(text, rawHtml, message) {\n  const sections = [structuredFactsText()];\n  const sources = [{ title: 'Website Resmi Desa Dukuhtengah', url: BASE_URL }];\n  const debug = [];\n  let confidence = 'medium';\n  let matchedSection = 'structured_facts';\n  let sourceTitle = 'Website Resmi Desa Dukuhtengah';\n  let sourceUrl = BASE_URL;\n\n  const wantsPemerintahDesa = includesAny(message, [\n    'kepala desa', 'perangkat', 'pemerintah desa', 'pemerintahan desa', 'sekretaris',\n    'bendahara', 'kaur', 'kasi', 'kasi kesra', 'kasi pelayanan',\n  ]);\n  const wantsDetailDesa = includesAny(message, [\n    'alamat', 'kantor', 'lokasi', 'telepon', 'email', 'kodepos', 'kode pos', 'jam layanan', 'jam buka',\n  ]);\n  const wantsAgenda = includesAny(message, ['agenda', 'kegiatan', 'acara']);\n  const wantsArticle = includesAny(message, ['artikel', 'berita', 'ruwat', 'rekso', 'harmoni', 'budaya']);\n\n  if (wantsDetailDesa) {\n    const detail = extractDetailDesa(text);\n    sections.push(detail.text);\n    confidence = 'high';\n    matchedSection = 'detail_desa';\n    debug.push(detail.found ? 'detail_desa_from_website' : 'detail_desa_from_structured_facts');\n  }\n\n  if (wantsPemerintahDesa) {\n    const pemerintah = extractPemerintahDesa(text);\n    sections.push(pemerintah.text);\n    confidence = 'high';\n    matchedSection = matchedSection === 'structured_facts' ? 'pemerintah_desa' : `${matchedSection},pemerintah_desa`;\n    debug.push(pemerintah.found ? 'pemerintah_desa_from_website' : 'pemerintah_desa_from_structured_facts');\n  }\n\n  if (wantsAgenda) {\n    const agenda = extractAgenda(text);\n    sections.push(agenda.text);\n    confidence = agenda.found ? 'high' : 'medium';\n    matchedSection = matchedSection === 'structured_facts' ? 'agenda' : `${matchedSection},agenda`;\n    debug.push(agenda.found ? 'agenda_from_website' : 'agenda_empty_or_not_found');\n  }\n\n  const articleContext = await findArticleContext(rawHtml, message);\n  if (wantsArticle || articleContext) {\n    if (articleContext) {\n      sections.push(articleContext.text);\n      for (const article of articleContext.candidates) {\n        sources.push({ title: article.title, url: article.url });\n      }\n      sourceTitle = articleContext.candidates[0].title;\n      sourceUrl = articleContext.candidates[0].url;\n      confidence = articleContext.usedDetail ? 'high' : (confidence === 'high' ? 'high' : 'medium');\n      matchedSection = matchedSection === 'structured_facts' ? 'artikel_terkait' : `${matchedSection},artikel_terkait`;\n      debug.push(articleContext.usedDetail ? 'article_detail_fetched' : 'article_link_matched_from_homepage');\n    } else {\n      debug.push('article_intent_no_matching_article');\n    }\n  }\n\n  const retrieved = retrieveRelevantChunks(text, message);\n  if (retrieved.length > 0) {\n    sections.push(['POTONGAN WEBSITE TERKAIT', ...retrieved.map((item) => item.chunk)].join('\\n\\n'));\n    debug.push(`keyword_retrieval_${retrieved.length}_chunks`);\n    if (matchedSection === 'structured_facts') {\n      matchedSection = 'keyword_retrieval';\n    }\n  }\n\n  const content = sections.filter(Boolean).join('\\n\\n').slice(0, 9000).trim();\n  if (!content) {\n    return {\n      content: FALLBACK_NOT_FOUND,\n      sources,\n      confidence: 'low',\n      matchedSection: 'not_found',\n      sourceTitle,\n      sourceUrl,\n      debug: ['no_context_found'],\n    };\n  }\n\n  return {\n    content,\n    sources,\n    confidence,\n    matchedSection,\n    sourceTitle,\n    sourceUrl,\n    debug,\n  };\n}\n\nconst cleanText = cleanHtml(htmlStr);\nconst focused = await buildFocusedContext(cleanText, htmlStr, normalizedMessage);\n\nreturn [{\n  json: {\n    website_content: focused.content,\n    full_website_excerpt: normalizeSpaces(cleanText).slice(0, 1200),\n    message: userMessage,\n    source_url: focused.sourceUrl,\n    source_title: focused.sourceTitle,\n    retrieval_reason: focused.debug.join('; ') || 'structured_facts_default',\n    matched_section: focused.matchedSection,\n    sources: focused.sources,\n    confidence: focused.confidence,\n    retrieval_debug: {\n      reason: focused.debug,\n      matched_section: focused.matchedSection,\n      source_url: focused.sourceUrl,\n      content_length: focused.content.length,\n    },\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        2096
+      ],
+      "id": "a7c797bf-3a88-4359-8ff9-daeac127b950",
+      "name": "Strip HTML & Prep"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-ktp",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "ktp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "KTP"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-kk1",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "kartu keluarga",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  },
+                  {
+                    "id": "sw-kk2",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": " kk",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "KK"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-dom",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "domisili",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Domisili"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-akta1",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "akta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  },
+                  {
+                    "id": "sw-akta2",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "kelahiran",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Akta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-sktm1",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "sktm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  },
+                  {
+                    "id": "sw-sktm2",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "tidak mampu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "SKTM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "sw-pengantar",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "keterangan usaha",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  },
+                  {
+                    "id": "sw-surat-usaha",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "surat usaha",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  },
+                  {
+                    "id": "sw-sku",
+                    "leftValue": "={{ ($json.message || '').toLowerCase() }}",
+                    "rightValue": "sku",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "SKU"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        192,
+        1472
+      ],
+      "id": "69419a6e-3ecd-4685-954e-f7226808cb3a",
+      "name": "Switch FAQ"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Reply KTP": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply KK": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Domisili": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Akta": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply SKTM": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request WAHA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ambil id1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Laravel1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Laravel1": {
+      "main": [
+        [
+          {
+            "node": "Set (reply Laravel)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set (reply Laravel)1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reply sapaan1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "ambil id1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF (sapaan)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF (sapaan)": {
+      "main": [
+        [
+          {
+            "node": "reply sapaan1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set (reply Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Set (reply Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set (reply Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Surat Usaha": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Website Desa": {
+      "main": [
+        [
+          {
+            "node": "Strip HTML & Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip HTML & Prep": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch FAQ": {
+      "main": [
+        [
+          {
+            "node": "Reply KTP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply KK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Domisili",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Akta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply SKTM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Surat Usaha",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET Website Desa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b64402b3-eced-47de-935b-9d53c7a86389",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6aed7feea0a54b9dbc00532d34ef4ca0cba26f910c932321a1b15cb1668ae493"
+  },
+  "nodeGroups": [],
+  "id": "z8bvLErNI1N3ADsM",
+  "tags": []
+}
